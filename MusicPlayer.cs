@@ -72,22 +72,6 @@ namespace EnsoMusicPlayer
         }
 
         /// <summary>
-        /// Pauses the current track.
-        /// </summary>
-        public void PauseTrack()
-        {
-            CurrentModule.Pause();
-        }
-
-        /// <summary>
-        /// Unpauses the current track.
-        /// </summary>
-        public void UnPauseTrack()
-        {
-            CurrentModule.UnPause();
-        }
-
-        /// <summary>
         /// Fades the currently-playing track in.
         /// </summary>
         public void FadeInTrack()
