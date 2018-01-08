@@ -1,4 +1,4 @@
-# Ens--Music-Player
+# Ensō Music Player
 A simple, free music looping system for Unity 3D.
 
 To use Ensō after downloading it from the Unity Asset Store or downloading it from GitHub, follow these instructions:
