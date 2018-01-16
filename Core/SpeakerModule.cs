@@ -6,8 +6,8 @@ namespace EnsoMusicPlayer
     public class SpeakerModule : MonoBehaviour
     {
 
-        private Speaker Primary;
-        private Speaker Secondary;
+        public Speaker Primary { get; private set; }
+        public Speaker Secondary { get; private set; }
 
         public MusicTrack PlayingTrack { get; private set; }
 
@@ -21,9 +21,12 @@ namespace EnsoMusicPlayer
         }
 
         public MusicPlayer Player;
+        // Holds the volume of the music player. This is held separately instead of referenced directly
+        // in order to decouple the module from the player.
+        public float PlayerVolume { get; private set; }
 
-        private enum VolumeStatuses { FadingIn, FadingOut, Static }
-        private VolumeStatuses VolumeStatus = VolumeStatuses.Static;
+        public enum VolumeStatuses { FadingIn, FadingOut, Static }
+        public VolumeStatuses VolumeStatus { get; private set; }
 
         private float CrossFadeTimeLeft;
         private float MaxCrossFadeTime;
@@ -42,6 +45,8 @@ namespace EnsoMusicPlayer
 
             Secondary.Module = this;
             Secondary.NextSpeaker = Primary;
+
+            VolumeStatus = VolumeStatuses.Static;
         }
 
         // Update is called once per frame
@@ -60,12 +65,12 @@ namespace EnsoMusicPlayer
                 case VolumeStatuses.FadingIn:
                     if (CrossFadeTimeLeft <= 0)
                     {
-                        SetVolume(Player.Volume);
+                        SetVolume(PlayerVolume);
                         VolumeStatus = VolumeStatuses.Static;
                     }
                     else
                     {
-                        SetVolume(Player.Volume * (1.0f - CrossFadeTimeLeft / MaxCrossFadeTime));
+                        SetVolume(PlayerVolume * (1.0f - CrossFadeTimeLeft / MaxCrossFadeTime));
                     }
                     break;
 
@@ -82,7 +87,7 @@ namespace EnsoMusicPlayer
                     }
                     else
                     {
-                        SetVolume(Player.Volume * CrossFadeTimeLeft / MaxCrossFadeTime);
+                        SetVolume(PlayerVolume * CrossFadeTimeLeft / MaxCrossFadeTime);
                     }
                     break;
             }
@@ -125,6 +130,11 @@ namespace EnsoMusicPlayer
         {
             Primary.SetVolume(volume);
             Secondary.SetVolume(volume);
+        }
+
+        internal void SetPlayerVolume(float playerVolume)
+        {
+            PlayerVolume = playerVolume;
         }
 
         internal void FadeOut(float crossFadeTime, bool stopAfterFade = false)

@@ -31,7 +31,7 @@ namespace EnsoMusicPlayer
         {
             get
             {
-                return (double)PlayingTrack.sampleLoopStart / PlayingTrack.Track.frequency;
+                return (double)PlayingTrack.LoopStart / PlayingTrack.Track.frequency;
             }
         }
 
@@ -42,7 +42,7 @@ namespace EnsoMusicPlayer
         {
             get
             {
-                return (double)PlayingTrack.sampleLoopLength / PlayingTrack.Track.frequency;
+                return (double)PlayingTrack.LoopLength / PlayingTrack.Track.frequency;
             }
         }
 
@@ -81,7 +81,7 @@ namespace EnsoMusicPlayer
 
                 double loopEnd = AbsoluteLoopEnd;
 
-                NextSpeaker.source.timeSamples = PlayingTrack.sampleLoopStart;
+                NextSpeaker.source.timeSamples = PlayingTrack.LoopStart;
                 NextSpeaker.source.PlayScheduled(loopEnd - source.time);
                 NextSpeaker.source.SetScheduledEndTime(loopEnd + LoopLength - source.time);
             }
@@ -121,6 +121,11 @@ namespace EnsoMusicPlayer
         internal void SetVolume(float volume)
         {
             source.volume = volume;
+        }
+
+        internal float GetVolume()
+        {
+            return source.volume;
         }
     }
 }

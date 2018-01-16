@@ -7,7 +7,6 @@ namespace EnsoMusicPlayer
     [AddComponentMenu("Audio/Ensō Music Player")]
     public class MusicPlayer : MonoBehaviour
     {
-
         [Header("Volume Settings")]
         [Range(0f, 1f)]
         public float Volume = 1f;
@@ -25,7 +24,7 @@ namespace EnsoMusicPlayer
         private SpeakerModule CurrentModule;
 
         // Use this for initialization
-        void Start()
+        void Awake()
         {
 
             PrimaryModule = gameObject.AddComponent<SpeakerModule>();
@@ -33,6 +32,9 @@ namespace EnsoMusicPlayer
             PrimaryModule.Player = this;
             SecondaryModule.Player = this;
             CurrentModule = PrimaryModule;
+
+            PrimaryModule.SetPlayerVolume(Volume);
+            SecondaryModule.SetPlayerVolume(Volume);
 
             RefreshModuleVolume(); // Initialize both modules' volume.
         }
@@ -60,6 +62,15 @@ namespace EnsoMusicPlayer
         }
 
         /// <summary>
+        /// Play a music track.
+        /// </summary>
+        /// <param name="track">The track to play</param>
+        public void PlayTrack(MusicTrack track)
+        {
+            CurrentModule.Play(track);
+        }
+
+        /// <summary>
         /// Crossfades to a music track.
         /// </summary>
         /// <param name="name">The name of the track</param>
@@ -69,6 +80,22 @@ namespace EnsoMusicPlayer
             SwitchModules();
             CurrentModule.Play(GetTrackByName(name));
             CurrentModule.FadeIn(CrossFadeTime);
+        }
+
+        /// <summary>
+        /// Pauses the current track.
+        /// </summary>
+        public void PauseTrack()
+        {
+            CurrentModule.Pause();
+        }
+
+        /// <summary>
+        /// Unpauses the current track.
+        /// </summary>
+        public void UnPauseTrack()
+        {
+            CurrentModule.UnPause();
         }
 
         /// <summary>
@@ -126,6 +153,8 @@ namespace EnsoMusicPlayer
             if (!PrimaryModule.IsFading && !SecondaryModule.IsFading)
             {
                 Volume = volume;
+                PrimaryModule.SetPlayerVolume(volume);
+                SecondaryModule.SetPlayerVolume(volume);
             }
         }
 
