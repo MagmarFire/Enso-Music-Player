@@ -13,8 +13,11 @@ namespace EnsoMusicPlayer
     {
         MusicPlayer musicPlayer;
         SpeakerModule module;
+        SpeakerModule module2;
         Speaker speaker1;
         Speaker speaker2;
+        Speaker speaker3;
+        Speaker speaker4;
 
         // A UnityTest behaves like a coroutine in PlayMode
         // and allows you to yield null to skip a frame in EditMode
@@ -43,8 +46,8 @@ namespace EnsoMusicPlayer
             module.Play(new MusicTrack
             {
                 Track = clipMock,
-                sampleLoopLength = 0,
-                sampleLoopStart = 0
+                LoopStart = 0,
+                LoopLength = 0
             });
 
             yield return null;
@@ -113,6 +116,66 @@ namespace EnsoMusicPlayer
         }
 
         [UnityTest]
+        public IEnumerator Enso_PlayAfterFadeOut()
+        {
+            SetUpMusicPlayer();
+
+            yield return null;
+
+            MusicTrack track = new MusicTrack
+            {
+                Track = AudioClip.Create("test", 2, 1, 1, false)
+            };
+
+            musicPlayer.PlayTrack(track);
+
+            yield return null;
+
+            musicPlayer.FadeOutTrack();
+
+            yield return new WaitForSeconds(2);
+
+            Assert.IsTrue(speaker1.GetVolume() <= 0f, "Speaker should be muted after fadeout.");
+
+            musicPlayer.PlayTrack("MusicTest");
+
+            yield return null;
+
+            Assert.IsTrue(speaker1.GetVolume() == musicPlayer.Volume, "Speaker1 should be back at player volume after PlayTrack() is called.");
+            Assert.IsTrue(speaker2.GetVolume() == musicPlayer.Volume, "Speaker2 should be back at player volume after PlayTrack() is called.");
+            Assert.IsTrue(speaker3.GetVolume() == musicPlayer.Volume, "Speaker3 should be back at player volume after PlayTrack() is called.");
+            Assert.IsTrue(speaker4.GetVolume() == musicPlayer.Volume, "Speaker4 should be back at player volume after PlayTrack() is called.");
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_PlayWhileFadingOut()
+        {
+            SetUpMusicPlayer();
+
+            yield return null;
+
+            MusicTrack track = new MusicTrack
+            {
+                Track = AudioClip.Create("test", 2, 1, 1, false)
+            };
+
+            musicPlayer.PlayTrack(track);
+
+            yield return null;
+
+            musicPlayer.FadeOutTrack();
+
+            musicPlayer.PlayTrack("MusicTest");
+
+            yield return new WaitForSeconds(2);
+
+            Assert.IsTrue(speaker1.GetVolume() == musicPlayer.Volume, "Speaker1 should be back at player volume after PlayTrack() is called.");
+            Assert.IsTrue(speaker2.GetVolume() == musicPlayer.Volume, "Speaker2 should be back at player volume after PlayTrack() is called.");
+            Assert.IsTrue(speaker3.GetVolume() == musicPlayer.Volume, "Speaker3 should be back at player volume after PlayTrack() is called.");
+            Assert.IsTrue(speaker4.GetVolume() == musicPlayer.Volume, "Speaker4 should be back at player volume after PlayTrack() is called.");
+        }
+
+        [UnityTest]
         public IEnumerator Enso_FadeInTrack()
         {
             SetUpModule();
@@ -123,8 +186,6 @@ namespace EnsoMusicPlayer
             {
                 Track = AudioClip.Create("test", 2, 1, 1, false)
             });
-
-            float playerVolume = module.PlayerVolume;
 
             yield return null;
 
@@ -140,7 +201,7 @@ namespace EnsoMusicPlayer
             yield return new WaitForSecondsRealtime(2);
 
             Assert.AreEqual(SpeakerModule.VolumeStatuses.Static, module.VolumeStatus);
-            Assert.AreEqual(speaker1.GetVolume(), playerVolume, "Speaker volume doesn't equal PlayerVolume when fading in is complete.");
+            Assert.AreEqual(speaker1.GetVolume(), originalVolume, "Speaker volume doesn't equal PlayerVolume when fading in is complete.");
         }
 
         [UnityTest]
@@ -178,6 +239,9 @@ namespace EnsoMusicPlayer
         {
             GameObject player = new GameObject();
             module = player.AddComponent<SpeakerModule>();
+
+            module.SetPlayerVolume(1f);
+
             List<Speaker> speakers = new List<Speaker>(player.GetComponents<Speaker>());
 
             speaker1 = speakers[0];
@@ -188,10 +252,25 @@ namespace EnsoMusicPlayer
         {
             GameObject player = new GameObject();
             musicPlayer = player.AddComponent<MusicPlayer>();
-            module = player.GetComponent<SpeakerModule>();
+
+            musicPlayer.Tracks = new List<MusicTrack>
+            {
+                new MusicTrack
+                {
+                    Name = "MusicTest",
+                    Track = AudioClip.Create("MusicTest", 2, 1, 1, false)
+                }
+            };
+
+            SpeakerModule[] modules = player.GetComponents<SpeakerModule>();
+
+            module = modules[0];
+            module2 = modules[1];
 
             speaker1 = module.Primary;
             speaker2 = module.Secondary;
+            speaker3 = module2.Primary;
+            speaker4 = module2.Secondary;
         }
 
         [TearDown]

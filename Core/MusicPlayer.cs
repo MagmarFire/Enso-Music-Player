@@ -58,7 +58,7 @@ namespace EnsoMusicPlayer
         {
             PlayingTrack = GetTrackByName(name);
 
-            CurrentModule.Play(PlayingTrack);
+            PlayTrack(PlayingTrack);
         }
 
         /// <summary>
@@ -67,6 +67,7 @@ namespace EnsoMusicPlayer
         /// <param name="track">The track to play</param>
         public void PlayTrack(MusicTrack track)
         {
+            CurrentModule.SetVolume(Volume);
             CurrentModule.Play(track);
         }
 

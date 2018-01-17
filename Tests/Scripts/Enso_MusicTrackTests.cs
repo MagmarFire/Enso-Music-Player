@@ -15,8 +15,8 @@ namespace EnsoMusicPlayer
             MusicTrack track = new MusicTrack
             {
                 Track = AudioClip.Create("test", 2, 1, 1, false),
-                sampleLoopStart = 42,
-                sampleLoopLength = 79
+                LoopStart = 42,
+                LoopLength = 79
             };
 
             Assert.AreEqual(42, track.LoopStart);
@@ -30,8 +30,8 @@ namespace EnsoMusicPlayer
 
             track.ReadTrackMetadata(Arg.Is("LOOPSTART")).Returns("100");
             track.ReadTrackMetadata(Arg.Is("LOOPLENGTH")).Returns("40000");
-            track.sampleLoopStart.Returns(0);
-            track.sampleLoopLength.Returns(0);
+            track.LoopStart = 0;
+            track.LoopLength = 0;
 
             Assert.AreEqual(100, track.LoopStart);
             Assert.AreEqual(40000, track.LoopLength);
@@ -45,8 +45,8 @@ namespace EnsoMusicPlayer
 
             track.ReadTrackMetadata(Arg.Is("LOOPSTART")).Returns("100");
             track.ReadTrackMetadata(Arg.Is("LOOPLENGTH")).Returns("40000");
-            track.sampleLoopStart.Returns(0);
-            track.sampleLoopLength.Returns(0);
+            track.LoopStart = 0;
+            track.LoopLength = 0;
 
             // Act
             int start = track.LoopStart;

@@ -10,8 +10,17 @@ namespace EnsoMusicPlayer
     {
         public string Name;
         public AudioClip Track;
-        public virtual int sampleLoopStart { get; set; }
-        public virtual int sampleLoopLength { get; set; }
+
+        [Serializable]
+        public struct LoopPoints
+        {
+            [Tooltip("When the loop will start for this track, in samples. Set to 0 to use the track's defaults.")]
+            public int sampleLoopStart;
+
+            [Tooltip("How long a loop will last before going back to the start point, in samples. Set to 0 to use the track's defaults.")]
+            public int sampleLoopLength;
+        }
+        public LoopPoints loopPoints;
 
         private int loadedLoopStart;
         private int loadedLoopLength;
@@ -20,9 +29,9 @@ namespace EnsoMusicPlayer
         {
             get
             {
-                if (sampleLoopStart > 0)
+                if (loopPoints.sampleLoopStart > 0)
                 {
-                    return sampleLoopStart;
+                    return loopPoints.sampleLoopStart;
                 }
                 else if (loadedLoopStart > 0)
                 {
@@ -44,15 +53,20 @@ namespace EnsoMusicPlayer
                     return loadedLoopStart;
                 }
             }
+
+            set
+            {
+                loopPoints.sampleLoopStart = value;
+            }
         }
 
         public int LoopLength
         {
             get
             {
-                if (sampleLoopLength > 0)
+                if (loopPoints.sampleLoopLength > 0)
                 {
-                    return sampleLoopLength;
+                    return loopPoints.sampleLoopLength;
                 }
                 else if (loadedLoopLength > 0)
                 {
@@ -73,6 +87,11 @@ namespace EnsoMusicPlayer
 
                     return loadedLoopLength;
                 }
+            }
+
+            set
+            {
+                loopPoints.sampleLoopLength = value;
             }
         }
 

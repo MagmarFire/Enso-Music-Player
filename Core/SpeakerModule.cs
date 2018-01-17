@@ -46,7 +46,7 @@ namespace EnsoMusicPlayer
             Secondary.Module = this;
             Secondary.NextSpeaker = Primary;
 
-            VolumeStatus = VolumeStatuses.Static;
+            InitializeVolume();
         }
 
         // Update is called once per frame
@@ -102,6 +102,9 @@ namespace EnsoMusicPlayer
         {
             IsPlaying = true;
             SetTrack(playingTrack);
+
+            InitializeVolume();
+
             Primary.Play();
         }
 
@@ -135,6 +138,12 @@ namespace EnsoMusicPlayer
         internal void SetPlayerVolume(float playerVolume)
         {
             PlayerVolume = playerVolume;
+        }
+
+        private void InitializeVolume()
+        {
+            VolumeStatus = VolumeStatuses.Static;
+            SetVolume(PlayerVolume);
         }
 
         internal void FadeOut(float crossFadeTime, bool stopAfterFade = false)
