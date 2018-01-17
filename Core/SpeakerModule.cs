@@ -70,7 +70,8 @@ namespace EnsoMusicPlayer
                     }
                     else
                     {
-                        SetVolume(PlayerVolume * (1.0f - CrossFadeTimeLeft / MaxCrossFadeTime));
+                        float t = CrossFadeTimeLeft / MaxCrossFadeTime;
+                        SetVolume(PlayerVolume * CalculateEqualPowerCrossfade(t, true));
                     }
                     break;
 
@@ -87,10 +88,27 @@ namespace EnsoMusicPlayer
                     }
                     else
                     {
-                        SetVolume(PlayerVolume * CrossFadeTimeLeft / MaxCrossFadeTime);
+                        float t = CrossFadeTimeLeft / MaxCrossFadeTime;
+                        SetVolume(PlayerVolume * CalculateEqualPowerCrossfade(t, false));
                     }
                     break;
             }
+        }
+
+        private float CalculateEqualPowerCrossfade(float percent, bool fadingIn)
+        {
+            float t;
+
+            if (fadingIn)
+            {
+                t = percent;
+            }
+            else
+            {
+                t = 1f - percent;
+            }
+
+            return (float)Math.Cos(t / 2 * Math.PI);
         }
 
         internal void SetTrack(MusicTrack musicTrack)
