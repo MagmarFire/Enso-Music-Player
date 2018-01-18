@@ -60,6 +60,14 @@ namespace EnsoMusicPlayer
             }
         }
 
+        public float LoopStartInSeconds
+        {
+            get
+            {
+                return (float)LoopStart / Track.frequency;
+            }
+        }
+
         public int LoopLength
         {
             get
@@ -93,6 +101,41 @@ namespace EnsoMusicPlayer
             {
                 loopPoints.sampleLoopLength = value;
             }
+        }
+
+        public AudioClip IntroClip { get; private set; }
+        public AudioClip LoopClip { get; private set; }
+
+        /// <summary>
+        /// Splits the audio track into two separate tracks (the intro and the loop) and caches them.
+        /// This MUST be called before the overall track can be played.
+        /// </summary>
+        public void CreateAndCacheClips()
+        {
+            int channels = Track.channels;
+            float[] clipData = new float[Track.samples * channels];
+            int loopStartSampleCount = LoopStart * channels;
+            int loopLengthSampleCount = LoopLength * channels;
+
+            Track.GetData(clipData, 0);
+
+            IntroClip = AudioClip.Create(
+                Name + " intro",
+                LoopStart,
+                channels,
+                Track.frequency,
+                false);
+
+            IntroClip.SetData(EnsoHelpers.Slice(clipData, 0, loopStartSampleCount), 0);
+
+            LoopClip = AudioClip.Create(
+                Name + " loop",
+                LoopLength,
+                channels,
+                Track.frequency,
+                false);
+
+            LoopClip.SetData(EnsoHelpers.Slice(clipData, loopStartSampleCount, loopLengthSampleCount), 0);
         }
 
         public virtual string ReadTrackMetadata(string name)

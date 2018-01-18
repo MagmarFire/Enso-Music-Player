@@ -19,22 +19,30 @@ namespace EnsoMusicPlayer
 
         private MusicTrack PlayingTrack;
 
-        private SpeakerModule PrimaryModule;
-        private SpeakerModule SecondaryModule;
-        private SpeakerModule CurrentModule;
+        private Speaker PrimaryModule;
+        private Speaker SecondaryModule;
+        private Speaker CurrentModule;
 
         // Use this for initialization
         void Awake()
         {
-
-            PrimaryModule = gameObject.AddComponent<SpeakerModule>();
-            SecondaryModule = gameObject.AddComponent<SpeakerModule>();
+            PrimaryModule = gameObject.AddComponent<Speaker>();
+            SecondaryModule = gameObject.AddComponent<Speaker>();
             PrimaryModule.Player = this;
             SecondaryModule.Player = this;
             CurrentModule = PrimaryModule;
 
             PrimaryModule.SetPlayerVolume(Volume);
             SecondaryModule.SetPlayerVolume(Volume);
+
+            // Cache all the clips before we play them for maximum performance when starting playback.
+            if (Tracks != null)
+            {
+                foreach (MusicTrack track in Tracks)
+                {
+                    track.CreateAndCacheClips();
+                }
+            }
 
             RefreshModuleVolume(); // Initialize both modules' volume.
         }
