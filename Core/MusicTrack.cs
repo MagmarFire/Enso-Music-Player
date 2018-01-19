@@ -103,7 +103,7 @@ namespace EnsoMusicPlayer
             }
         }
 
-        public AudioClip IntroClip { get; private set; }
+        public AudioClip IntroClip{ get; private set; }
         public AudioClip LoopClip { get; private set; }
 
         /// <summary>
@@ -112,30 +112,38 @@ namespace EnsoMusicPlayer
         /// </summary>
         public void CreateAndCacheClips()
         {
-            int channels = Track.channels;
-            float[] clipData = new float[Track.samples * channels];
-            int loopStartSampleCount = LoopStart * channels;
-            int loopLengthSampleCount = LoopLength * channels;
+            try
+            {
+                int channels = Track.channels;
+                float[] clipData = new float[Track.samples * channels];
+                int loopStartSampleCount = Math.Max(1, LoopStart * channels);
+                int loopLengthSampleCount = Math.Max(1, LoopLength * channels);
 
-            Track.GetData(clipData, 0);
+                Track.GetData(clipData, 0);
 
-            IntroClip = AudioClip.Create(
-                Name + " intro",
-                LoopStart,
-                channels,
-                Track.frequency,
-                false);
+                IntroClip = AudioClip.Create(
+                    Name + " intro",
+                    Math.Max(1, LoopStart),
+                    channels,
+                    Track.frequency,
+                    false);
 
-            IntroClip.SetData(EnsoHelpers.Slice(clipData, 0, loopStartSampleCount), 0);
+                IntroClip.SetData(EnsoHelpers.Slice(clipData, 0, loopStartSampleCount), 0);
 
-            LoopClip = AudioClip.Create(
-                Name + " loop",
-                LoopLength,
-                channels,
-                Track.frequency,
-                false);
+                LoopClip = AudioClip.Create(
+                    Name + " loop",
+                    Math.Max(1, LoopLength),
+                    channels,
+                    Track.frequency,
+                    false);
 
-            LoopClip.SetData(EnsoHelpers.Slice(clipData, loopStartSampleCount, loopLengthSampleCount), 0);
+                LoopClip.SetData(EnsoHelpers.Slice(clipData, loopStartSampleCount, loopLengthSampleCount), 0);
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(string.Format(@"[Enso] An exception occurred when creating and caching the ""{0}"" music clip: {1}", Track.name, e.Message));
+                throw e;
+            }
         }
 
         public virtual string ReadTrackMetadata(string name)

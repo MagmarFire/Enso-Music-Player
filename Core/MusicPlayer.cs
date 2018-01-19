@@ -19,21 +19,21 @@ namespace EnsoMusicPlayer
 
         private MusicTrack PlayingTrack;
 
-        private Speaker PrimaryModule;
-        private Speaker SecondaryModule;
-        private Speaker CurrentModule;
+        private Speaker PrimarySpeaker;
+        private Speaker SecondarySpeaker;
+        private Speaker CurrentSpeaker;
 
         // Use this for initialization
         void Awake()
         {
-            PrimaryModule = gameObject.AddComponent<Speaker>();
-            SecondaryModule = gameObject.AddComponent<Speaker>();
-            PrimaryModule.Player = this;
-            SecondaryModule.Player = this;
-            CurrentModule = PrimaryModule;
+            PrimarySpeaker = gameObject.AddComponent<Speaker>();
+            SecondarySpeaker = gameObject.AddComponent<Speaker>();
+            PrimarySpeaker.Player = this;
+            SecondarySpeaker.Player = this;
+            CurrentSpeaker = PrimarySpeaker;
 
-            PrimaryModule.SetPlayerVolume(Volume);
-            SecondaryModule.SetPlayerVolume(Volume);
+            PrimarySpeaker.SetPlayerVolume(Volume);
+            SecondarySpeaker.SetPlayerVolume(Volume);
 
             // Cache all the clips before we play them for maximum performance when starting playback.
             if (Tracks != null)
@@ -44,7 +44,7 @@ namespace EnsoMusicPlayer
                 }
             }
 
-            RefreshModuleVolume(); // Initialize both modules' volume.
+            RefreshSpeakerVolume(); // Initialize both modules' volume.
         }
 
         // Update is called once per frame
@@ -53,75 +53,92 @@ namespace EnsoMusicPlayer
             // We need this because this is C# 4, not 6...
             if (Volume != PreviousVolume)
             {
-                RefreshModuleVolume();
+                RefreshSpeakerVolume();
                 PreviousVolume = Volume;
             }
         }
 
+        #region PublicAPI
         /// <summary>
         /// Play a music track.
         /// </summary>
         /// <param name="name">The name of the track</param>
-        public void PlayTrack(string name)
+        public void Play(string name)
         {
             PlayingTrack = GetTrackByName(name);
 
-            PlayTrack(PlayingTrack);
+            Play(PlayingTrack);
         }
 
         /// <summary>
         /// Play a music track.
         /// </summary>
         /// <param name="track">The track to play</param>
-        public void PlayTrack(MusicTrack track)
+        public void Play(MusicTrack track)
         {
-            CurrentModule.SetVolume(Volume);
-            CurrentModule.Play(track);
+            CurrentSpeaker.SetVolume(Volume);
+            CurrentSpeaker.Play(track);
         }
 
         /// <summary>
         /// Crossfades to a music track.
         /// </summary>
         /// <param name="name">The name of the track</param>
-        public void CrossFadeToTrack(string name)
+        public void CrossFadeTo(string name)
         {
-            CurrentModule.FadeOut(CrossFadeTime, true);
-            SwitchModules();
-            CurrentModule.Play(GetTrackByName(name));
-            CurrentModule.FadeIn(CrossFadeTime);
+            CurrentSpeaker.FadeOut(CrossFadeTime, true);
+            SwitchSpeakers();
+            CurrentSpeaker.Play(GetTrackByName(name));
+            CurrentSpeaker.FadeIn(CrossFadeTime);
         }
 
         /// <summary>
         /// Pauses the current track.
         /// </summary>
-        public void PauseTrack()
+        public void Pause()
         {
-            CurrentModule.Pause();
+            CurrentSpeaker.Pause();
         }
 
         /// <summary>
         /// Unpauses the current track.
         /// </summary>
-        public void UnPauseTrack()
+        public void Unpause()
         {
-            CurrentModule.UnPause();
+            CurrentSpeaker.UnPause();
         }
 
         /// <summary>
         /// Fades the currently-playing track in.
         /// </summary>
-        public void FadeInTrack()
+        public void FadeIn()
         {
-            CurrentModule.FadeIn(CrossFadeTime);
+            CurrentSpeaker.FadeIn(CrossFadeTime);
         }
 
         /// <summary>
         /// Fades the currently-playing track out.
         /// </summary>
-        public void FadeOutTrack()
+        public void FadeOut()
         {
-            CurrentModule.FadeOut(CrossFadeTime);
+            CurrentSpeaker.FadeOut(CrossFadeTime);
         }
+
+        /// <summary>
+        /// Sets the volume of the music player. Will do nothing if the player is in the middle of fading.
+        /// </summary>
+        /// <param name="volume">The volume level, from 0.0 to 1.0.</param>
+        public void SetVolume(float volume)
+        {
+            if (!PrimarySpeaker.IsFading && !SecondarySpeaker.IsFading)
+            {
+                Volume = volume;
+                PrimarySpeaker.SetPlayerVolume(volume);
+                SecondarySpeaker.SetPlayerVolume(volume);
+            }
+        }
+
+        #endregion
 
         private MusicTrack GetTrackByName(string name)
         {
@@ -139,41 +156,27 @@ namespace EnsoMusicPlayer
         }
 
         /// <summary>
-        /// Switches the active module. Useful while crossfading.
+        /// Switches the primary speaker to the secondary one and vice versa.. Useful while crossfading.
         /// </summary>
-        private void SwitchModules()
+        private void SwitchSpeakers()
         {
-            if (CurrentModule == PrimaryModule)
+            if (CurrentSpeaker == PrimarySpeaker)
             {
-                CurrentModule = SecondaryModule;
+                CurrentSpeaker = SecondarySpeaker;
             }
             else
             {
-                CurrentModule = PrimaryModule;
-            }
-        }
-
-        /// <summary>
-        /// Sets the volume of the music player. Will do nothing if the player is in the middle of fading.
-        /// </summary>
-        /// <param name="volume">The volume level, from 0.0 to 1.0.</param>
-        public void SetVolume(float volume)
-        {
-            if (!PrimaryModule.IsFading && !SecondaryModule.IsFading)
-            {
-                Volume = volume;
-                PrimaryModule.SetPlayerVolume(volume);
-                SecondaryModule.SetPlayerVolume(volume);
+                CurrentSpeaker = PrimarySpeaker;
             }
         }
 
         /// <summary>
         /// Updates the modules' volume to match the music player's.
         /// </summary>
-        private void RefreshModuleVolume()
+        private void RefreshSpeakerVolume()
         {
-            PrimaryModule.SetVolume(Volume);
-            SecondaryModule.SetVolume(Volume);
+            PrimarySpeaker.SetVolume(Volume);
+            SecondarySpeaker.SetVolume(Volume);
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using UnityEngine;
+﻿using UnityEngine;
 
 namespace EnsoMusicPlayer
 {
@@ -39,6 +38,15 @@ namespace EnsoMusicPlayer
         private float MaxCrossFadeTime;
 
         private bool StopAfterFade { get; set; }
+
+        private int pausePosition;
+        public bool IsPaused
+        {
+            get
+            {
+                return pausePosition > 0;
+            }
+        }
 
         // Use this for initialization
         void Awake()
@@ -104,6 +112,7 @@ namespace EnsoMusicPlayer
 
         internal void Play(MusicTrack playingTrack)
         {
+            pausePosition = 0;
             Stop();
             SetTrack(playingTrack);
 
@@ -112,8 +121,23 @@ namespace EnsoMusicPlayer
             Primary.clip = PlayingTrack.IntroClip;
             Secondary.clip = PlayingTrack.LoopClip;
 
-            Primary.Play();
-            Secondary.PlayDelayed(PlayingTrack.LoopStartInSeconds);
+            PlayAtPosition(0);
+        }
+
+        private void PlayAtPosition(int samplePosition)
+        {
+            if (samplePosition <= Primary.clip.samples)
+            {
+                Primary.timeSamples = samplePosition;
+                Secondary.timeSamples = 0;
+                Primary.Play();
+                Secondary.PlayDelayed((float)(Primary.clip.samples - samplePosition) / Primary.clip.frequency);
+            }
+            else
+            {
+                Secondary.timeSamples = samplePosition - Primary.clip.samples;
+                Secondary.Play();
+            }
         }
 
         internal void Stop()
@@ -122,16 +146,41 @@ namespace EnsoMusicPlayer
             Secondary.Stop();
         }
 
+        private int GetPositionInSamples()
+        {
+            if (PlayingTrack != null)
+            {
+                if (Primary.isPlaying)
+                {
+                    return Primary.timeSamples;
+                }
+                else
+                {
+                    return Primary.clip.samples + Secondary.timeSamples;
+                }
+            }
+            else
+            {
+                return 0;
+            }
+        }
+
         internal void Pause()
         {
-            Primary.Pause();
-            Secondary.Pause();
+            if (!IsPaused)
+            {
+                pausePosition = GetPositionInSamples();
+                Stop();
+            }
         }
 
         internal void UnPause()
         {
-            Primary.UnPause();
-            Secondary.UnPause();
+            if (IsPaused)
+            {
+                PlayAtPosition(pausePosition);
+                pausePosition = 0;
+            }
         }
 
         internal void SetVolume(float volume)

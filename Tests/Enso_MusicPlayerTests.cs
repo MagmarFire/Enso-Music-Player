@@ -38,10 +38,12 @@ namespace EnsoMusicPlayer
 
             yield return null;
 
-            module.Play(new MusicTrack
+            MusicTrack track = new MusicTrack
             {
                 Track = AudioClip.Create("test", 2, 1, 1, false)
-            });
+            };
+            track.CreateAndCacheClips();
+            module.Play(track);
 
             float originalVolume = speaker1.volume;
 
@@ -72,18 +74,19 @@ namespace EnsoMusicPlayer
             {
                 Track = AudioClip.Create("test", 2, 1, 1, false)
             };
+            track.CreateAndCacheClips();
 
-            musicPlayer.PlayTrack(track);
+            musicPlayer.Play(track);
 
             yield return null;
 
-            musicPlayer.FadeOutTrack();
+            musicPlayer.FadeOut();
 
             yield return new WaitForSeconds(2);
 
             Assert.IsTrue(speaker1.volume <= 0f, "Speaker should be muted after fadeout.");
 
-            musicPlayer.PlayTrack("MusicTest");
+            musicPlayer.Play("MusicTest");
 
             yield return null;
 
@@ -104,14 +107,15 @@ namespace EnsoMusicPlayer
             {
                 Track = AudioClip.Create("test", 2, 1, 1, false)
             };
+            track.CreateAndCacheClips();
 
-            musicPlayer.PlayTrack(track);
+            musicPlayer.Play(track);
 
             yield return null;
 
-            musicPlayer.FadeOutTrack();
+            musicPlayer.FadeOut();
 
-            musicPlayer.PlayTrack("MusicTest");
+            musicPlayer.Play("MusicTest");
 
             yield return new WaitForSeconds(2);
 
@@ -128,10 +132,12 @@ namespace EnsoMusicPlayer
 
             yield return null;
 
-            module.Play(new MusicTrack
+            MusicTrack track = new MusicTrack
             {
                 Track = AudioClip.Create("test", 2, 1, 1, false)
-            });
+            };
+            track.CreateAndCacheClips();
+            module.Play(track);
 
             yield return null;
 
@@ -157,16 +163,20 @@ namespace EnsoMusicPlayer
 
             yield return null;
 
-            musicPlayer.PlayTrack(new MusicTrack
+            MusicTrack track = new MusicTrack
             {
-                Track = AudioClip.Create("test", 2, 1, 1, false)
-            });
+                Track = AudioClip.Create("test", 4, 1, 1, false),
+                LoopStart = 1,
+                LoopLength = 1
+            };
+            track.CreateAndCacheClips();
+            musicPlayer.Play(track);
 
             float playerVolume = musicPlayer.Volume;
 
             yield return null;
 
-            musicPlayer.FadeInTrack();
+            musicPlayer.FadeIn();
             float originalVolume = speaker1.volume;
 
             musicPlayer.SetVolume(.5f);
@@ -175,10 +185,24 @@ namespace EnsoMusicPlayer
 
             yield return new WaitForSeconds(2);
 
-            musicPlayer.FadeOutTrack();
+            musicPlayer.FadeOut();
             musicPlayer.SetVolume(.5f);
 
             Assert.AreNotEqual(speaker1.volume, .5f, "Volume should not be changeable while fading out.");
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_NullLoopPointsShouldNotThrowException()
+        {
+            SetUpMusicPlayer();
+
+            yield return null;
+
+            MusicTrack track = new MusicTrack
+            {
+                Track = AudioClip.Create("test", 10, 1, 1, false),
+            };
+            track.CreateAndCacheClips();
         }
 
         private void SetUpModule()
@@ -204,11 +228,11 @@ namespace EnsoMusicPlayer
                 new MusicTrack
                 {
                     Name = "MusicTest",
-                    Track = AudioClip.Create("MusicTest", 2, 1, 1, false),
+                    Track = AudioClip.Create("MusicTest", 10, 1, 1, false),
                     loopPoints = new MusicTrack.LoopPoints
                     {
-                        sampleLoopStart = 1,
-                        sampleLoopLength = 1
+                        sampleLoopStart = 2,
+                        sampleLoopLength = 3
                     }
                 }
             };
