@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 namespace EnsoMusicPlayer
 {
@@ -105,23 +106,28 @@ namespace EnsoMusicPlayer
             }
         }
 
-        internal void SetTrack(MusicTrack musicTrack)
+        public void SetTrack(MusicTrack musicTrack)
         {
             PlayingTrack = musicTrack;
         }
 
-        internal void Play(MusicTrack playingTrack)
+        public void Play(MusicTrack track)
+        {
+            PlayAtPoint(track, 0f);
+        }
+
+        public void PlayAtPoint(MusicTrack track, float time)
         {
             pausePosition = 0;
             Stop();
-            SetTrack(playingTrack);
+            SetTrack(track);
 
             InitializeVolume();
 
             Primary.clip = PlayingTrack.IntroClip;
             Secondary.clip = PlayingTrack.LoopClip;
 
-            PlayAtPosition(0);
+            PlayAtPosition(PlayingTrack.TimeToSamples(time));
         }
 
         private void PlayAtPosition(int samplePosition)

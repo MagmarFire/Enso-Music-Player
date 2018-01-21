@@ -76,8 +76,45 @@ namespace EnsoMusicPlayer
         /// <param name="track">The track to play</param>
         public void Play(MusicTrack track)
         {
+            PlayAtPoint(track, 0f);
+        }
+
+        /// <summary>
+        /// Scrubs the currently-playing track to a specific point in its timeline.
+        /// </summary>
+        /// <param name="time">How far along to scrub the track, in seconds</param>
+        public void Scrub(float time)
+        {
+            if (PlayingTrack != null)
+            {
+                time = Mathf.Min(
+                    Mathf.Max(0f, time - .01f), // Subtract by .01 to avoid an edge case error.
+                    PlayingTrack.LengthInSeconds);
+                PlayAtPoint(PlayingTrack, time);
+            }
+        }
+
+        /// <summary>
+        /// Scrubs the currently-playing track to a specific point in its timeline.
+        /// </summary>
+        /// <param name="percentage">How far along to scrub the track, as a percentage of the track's length</param>
+        public void ScrubAsPercentage(float percentage)
+        {
+            if (PlayingTrack != null)
+            {
+                Scrub(percentage * PlayingTrack.LengthInSeconds);
+            }
+        }
+
+        /// <summary>
+        /// Plays the track starting at the given point on its timeline.
+        /// </summary>
+        /// <param name="track">The track to play</param>
+        /// <param name="time">The time to play the song at, in seconds</param>
+        public void PlayAtPoint(MusicTrack track, float time)
+        {
             CurrentSpeaker.SetVolume(Volume);
-            CurrentSpeaker.Play(track);
+            CurrentSpeaker.PlayAtPoint(track, time);
         }
 
         /// <summary>

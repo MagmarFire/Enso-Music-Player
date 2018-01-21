@@ -123,6 +123,21 @@ namespace EnsoMusicPlayer
             }
         }
 
+        public int LengthInSeconds
+        {
+            get
+            {
+                if (Track != null)
+                {
+                    return LengthInSamples / Track.frequency;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+
         public AudioClip IntroClip{ get; private set; }
         public AudioClip LoopClip { get; private set; }
 
@@ -164,6 +179,18 @@ namespace EnsoMusicPlayer
                 Debug.LogError(string.Format(@"[Enso] An exception occurred when creating and caching the ""{0}"" music clip: {1}", Track.name, e.Message));
                 throw e;
             }
+        }
+
+        /// <summary>
+        /// Converts the inputted time to its equivalent time in samples.
+        /// </summary>
+        /// <param name="time">The time in seconds</param>
+        /// <returns>The time in samples</returns>
+        public int TimeToSamples(float time)
+        {
+            return Math.Min(
+                Math.Max(0, LengthInSamples - 1), // Subtract 1 to avoid an edge case error.
+                Convert.ToInt32(time * Track.frequency));
         }
 
         public virtual string ReadTrackMetadata(string name)
