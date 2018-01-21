@@ -103,6 +103,26 @@ namespace EnsoMusicPlayer
             }
         }
 
+        /// <summary>
+        /// Length of the track in samples. Useful for determining the length
+        /// of a track without needing to take into account how many channels
+        /// it has.
+        /// </summary>
+        public int LengthInSamples
+        {
+            get
+            {
+                if (Track != null)
+                {
+                    return Track.samples / Track.channels;
+                }
+                else
+                {
+                    return 0;
+                }
+            }
+        }
+
         public AudioClip IntroClip{ get; private set; }
         public AudioClip LoopClip { get; private set; }
 

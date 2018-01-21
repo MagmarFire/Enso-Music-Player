@@ -62,5 +62,16 @@ namespace EnsoMusicPlayer
 
             track.DidNotReceive().ReadTrackMetadata(Arg.Any<string>());
         }
+
+        [Test]
+        {
+            // Arrange
+            var clip = AudioClip.Create("test", 20, 2, 1, false);
+
+            MusicTrack track = new MusicTrack();
+            track.Track = clip;
+
+            Assert.AreEqual(10, track.LengthInSamples);
+        }
     }
 }
