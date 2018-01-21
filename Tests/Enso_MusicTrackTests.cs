@@ -64,6 +64,7 @@ namespace EnsoMusicPlayer
         }
 
         [Test]
+        public void Enso_LengthInSamples()
         {
             // Arrange
             var clip = AudioClip.Create("test", 20, 2, 1, false);
