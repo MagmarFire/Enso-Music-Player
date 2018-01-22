@@ -17,7 +17,7 @@ namespace EnsoMusicPlayer
         [Header("TrackSettings")]
         public List<MusicTrack> Tracks;
 
-        private MusicTrack PlayingTrack;
+        public MusicTrack PlayingTrack { get; private set; }
 
         private Speaker PrimarySpeaker;
         private Speaker SecondarySpeaker;
@@ -65,9 +65,7 @@ namespace EnsoMusicPlayer
         /// <param name="name">The name of the track</param>
         public void Play(string name)
         {
-            PlayingTrack = GetTrackByName(name);
-
-            Play(PlayingTrack);
+            Play(GetTrackByName(name));
         }
 
         /// <summary>
@@ -76,6 +74,7 @@ namespace EnsoMusicPlayer
         /// <param name="track">The track to play</param>
         public void Play(MusicTrack track)
         {
+            PlayingTrack = track;
             PlayAtPoint(track, 0f);
         }
 
@@ -87,9 +86,7 @@ namespace EnsoMusicPlayer
         {
             if (PlayingTrack != null)
             {
-                time = Mathf.Min(
-                    Mathf.Max(0f, time - .01f), // Subtract by .01 to avoid an edge case error.
-                    PlayingTrack.LengthInSeconds);
+                time = Mathf.Min(time, PlayingTrack.LengthInSeconds);
                 PlayAtPoint(PlayingTrack, time);
             }
         }
@@ -173,6 +170,16 @@ namespace EnsoMusicPlayer
                 PrimarySpeaker.SetPlayerVolume(volume);
                 SecondarySpeaker.SetPlayerVolume(volume);
             }
+        }
+
+        /// <summary>
+        /// Stops the player.
+        /// </summary>
+        public void Stop()
+        {
+            PrimarySpeaker.Stop();
+            SecondarySpeaker.Stop();
+            PlayingTrack = null;
         }
 
         #endregion

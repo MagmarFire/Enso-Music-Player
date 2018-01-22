@@ -69,10 +69,16 @@ namespace EnsoMusicPlayer
             // Arrange
             var clip = AudioClip.Create("test", 20, 2, 1, false);
 
-            MusicTrack track = new MusicTrack();
+            MusicTrack track = new MusicTrack
+            {
+                Track = clip,
+                LoopStart = 3,
+                LoopLength = 10
+            };
             track.Track = clip;
+            track.CreateAndCacheClips();
 
-            Assert.AreEqual(10, track.LengthInSamples);
+            Assert.AreEqual(13, track.LengthInSamples);
         }
     }
 }

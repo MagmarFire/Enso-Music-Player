@@ -205,9 +205,71 @@ namespace EnsoMusicPlayer
             track.CreateAndCacheClips();
         }
 
+        [UnityTest]
+        public IEnumerator Enso_ScrubbingToEndsOfTrackShouldNotThrowError()
+        {
+            SetUpMusicPlayer();
+
+            yield return null;
+
+            MusicTrack track = new MusicTrack
+            {
+                Track = AudioClip.Create("test", 13803264, 2, 44100, false),
+                LoopStart = 11130,
+                LoopLength = 6477145
+            };
+            track.CreateAndCacheClips();
+
+            yield return null;
+
+            musicPlayer.Play(track);
+
+            yield return null;
+
+            musicPlayer.Scrub(152.098f);
+
+            yield return null;
+
+            musicPlayer.ScrubAsPercentage(.97f);
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_PlayShouldSetCurrentTrack()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+
+            // Play(string) test
+            // Act
+            musicPlayer.Play("MusicTest");
+
+            yield return null;
+
+            // Assert
+            Assert.IsNotNull(musicPlayer.PlayingTrack);
+
+            // Play(MusicTrack) test
+            // Arrange
+            MusicTrack track = new MusicTrack
+            {
+                Track = AudioClip.Create("test", 1000, 1, 1, false)
+            };
+            track.CreateAndCacheClips();
+
+            // Act
+            musicPlayer.Stop();
+            musicPlayer.Play(track);
+
+            yield return null;
+
+            // Assert
+            Assert.IsNotNull(musicPlayer.PlayingTrack);
+        }
+
         private void SetUpModule()
         {
             GameObject player = new GameObject();
+            player.AddComponent<AudioListener>();
             module = player.AddComponent<Speaker>();
 
             module.SetPlayerVolume(1f);
@@ -221,6 +283,7 @@ namespace EnsoMusicPlayer
         private void SetUpMusicPlayer()
         {
             GameObject player = new GameObject();
+            player.AddComponent<AudioListener>();
             musicPlayer = player.AddComponent<MusicPlayer>();
 
             musicPlayer.Tracks = new List<MusicTrack>

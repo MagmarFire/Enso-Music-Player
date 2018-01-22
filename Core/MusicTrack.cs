@@ -60,14 +60,6 @@ namespace EnsoMusicPlayer
             }
         }
 
-        public float LoopStartInSeconds
-        {
-            get
-            {
-                return (float)LoopStart / Track.frequency;
-            }
-        }
-
         public int LoopLength
         {
             get
@@ -104,9 +96,7 @@ namespace EnsoMusicPlayer
         }
 
         /// <summary>
-        /// Length of the track in samples. Useful for determining the length
-        /// of a track without needing to take into account how many channels
-        /// it has.
+        /// The sum of the lengths of the intro clip and loop clip in samples.
         /// </summary>
         public int LengthInSamples
         {
@@ -114,7 +104,7 @@ namespace EnsoMusicPlayer
             {
                 if (Track != null)
                 {
-                    return Track.samples / Track.channels;
+                    return IntroClip.samples + LoopClip.samples;
                 }
                 else
                 {
@@ -123,13 +113,16 @@ namespace EnsoMusicPlayer
             }
         }
 
-        public int LengthInSeconds
+        /// <summary>
+        /// The sum of the lengths of the intro clip and loop clip in seconds.
+        /// </summary>
+        public float LengthInSeconds
         {
             get
             {
                 if (Track != null)
                 {
-                    return LengthInSamples / Track.frequency;
+                    return IntroClip.length + LoopClip.length;
                 }
                 else
                 {
@@ -188,9 +181,7 @@ namespace EnsoMusicPlayer
         /// <returns>The time in samples</returns>
         public int TimeToSamples(float time)
         {
-            return Math.Min(
-                Math.Max(0, LengthInSamples - 1), // Subtract 1 to avoid an edge case error.
-                Convert.ToInt32(time * Track.frequency));
+            return Math.Min(LengthInSamples, Convert.ToInt32(time * Track.frequency));
         }
 
         public virtual string ReadTrackMetadata(string name)
