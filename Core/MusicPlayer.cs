@@ -59,6 +59,29 @@ namespace EnsoMusicPlayer
         }
 
         #region PublicAPI
+
+        /// <summary>
+        /// The time of the current track.
+        /// </summary>
+        public float CurrentTime
+        {
+            get
+            {
+                return CurrentSpeaker.CurrentTime;
+            }
+        }
+
+        /// <summary>
+        /// The length of the current track.
+        /// </summary>
+        public float CurrentLength
+        {
+            get
+            {
+                return CurrentSpeaker.CurrentLength;
+            }
+        }
+
         /// <summary>
         /// Play a music track.
         /// </summary>

@@ -310,10 +310,10 @@ namespace EnsoMusicPlayer
             module = modules[0];
             module2 = modules[1];
 
-            speaker1 = module.Primary;
-            speaker2 = module.Secondary;
-            speaker3 = module2.Primary;
-            speaker4 = module2.Secondary;
+            speaker1 = module.IntroSource;
+            speaker2 = module.LoopSource;
+            speaker3 = module2.IntroSource;
+            speaker4 = module2.LoopSource;
         }
 
         [TearDown]

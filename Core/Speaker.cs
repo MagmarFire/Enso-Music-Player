@@ -6,8 +6,8 @@ namespace EnsoMusicPlayer
     public class Speaker : MonoBehaviour
     {
 
-        public AudioSource Primary { get; private set; }
-        public AudioSource Secondary { get; private set; }
+        public AudioSource IntroSource { get; private set; }
+        public AudioSource LoopSource { get; private set; }
 
         public MusicTrack PlayingTrack { get; private set; }
 
@@ -15,7 +15,7 @@ namespace EnsoMusicPlayer
         {
             get
             {
-                return Primary && Primary.isPlaying || Secondary && Secondary.isPlaying;
+                return IntroSource.isPlaying || LoopSource.isPlaying;
             }
         }
 
@@ -49,13 +49,44 @@ namespace EnsoMusicPlayer
             }
         }
 
+        public float CurrentTime
+        {
+            get
+            {
+                if (PlayingTrack != null)
+                {
+                    if (IntroSource.isPlaying)
+                    {
+                        return IntroSource.time;
+                    }
+                    else if (LoopSource.isPlaying)
+                    {
+                        return IntroSource.clip.length + LoopSource.time;
+                    }
+                }
+                return 0f;
+            }
+        }
+
+        public float CurrentLength
+        {
+            get
+            {
+                if (PlayingTrack != null)
+                {
+                    return PlayingTrack.LengthInSeconds;
+                }
+                return 0f;
+            }
+        }
+
         // Use this for initialization
         void Awake()
         {
-            Primary = gameObject.AddComponent<AudioSource>();
-            Secondary = gameObject.AddComponent<AudioSource>();
+            IntroSource = gameObject.AddComponent<AudioSource>();
+            LoopSource = gameObject.AddComponent<AudioSource>();
 
-            Secondary.loop = true;
+            LoopSource.loop = true;
 
             InitializeVolume();
         }
@@ -124,45 +155,45 @@ namespace EnsoMusicPlayer
 
             InitializeVolume();
 
-            Primary.clip = PlayingTrack.IntroClip;
-            Secondary.clip = PlayingTrack.LoopClip;
+            IntroSource.clip = PlayingTrack.IntroClip;
+            LoopSource.clip = PlayingTrack.LoopClip;
 
             PlayAtPosition(PlayingTrack.TimeToSamples(time));
         }
 
         private void PlayAtPosition(int samplePosition)
         {
-            if (samplePosition <= Primary.clip.samples)
+            if (samplePosition <= IntroSource.clip.samples)
             {
-                Primary.timeSamples = samplePosition;
-                Secondary.timeSamples = 0;
-                Primary.Play();
-                Secondary.PlayDelayed((float)(Primary.clip.samples - samplePosition) / Primary.clip.frequency);
+                IntroSource.timeSamples = samplePosition;
+                LoopSource.timeSamples = 0;
+                IntroSource.Play();
+                LoopSource.PlayDelayed((float)(IntroSource.clip.samples - samplePosition) / IntroSource.clip.frequency);
             }
             else
             {
-                Secondary.timeSamples = samplePosition - Primary.clip.samples;
-                Secondary.Play();
+                LoopSource.timeSamples = samplePosition - IntroSource.clip.samples;
+                LoopSource.Play();
             }
         }
 
         internal void Stop()
         {
-            Primary.Stop();
-            Secondary.Stop();
+            IntroSource.Stop();
+            LoopSource.Stop();
         }
 
         private int GetPositionInSamples()
         {
             if (PlayingTrack != null)
             {
-                if (Primary.isPlaying)
+                if (IntroSource.isPlaying)
                 {
-                    return Primary.timeSamples;
+                    return IntroSource.timeSamples;
                 }
                 else
                 {
-                    return Primary.clip.samples + Secondary.timeSamples;
+                    return IntroSource.clip.samples + LoopSource.timeSamples;
                 }
             }
             else
@@ -191,8 +222,8 @@ namespace EnsoMusicPlayer
 
         internal void SetVolume(float volume)
         {
-            Primary.volume = volume;
-            Secondary.volume = volume;
+            IntroSource.volume = volume;
+            LoopSource.volume = volume;
         }
 
         internal void SetPlayerVolume(float playerVolume)
