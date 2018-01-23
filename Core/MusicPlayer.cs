@@ -145,7 +145,8 @@ namespace EnsoMusicPlayer
         {
             CurrentSpeaker.FadeOut(CrossFadeTime, true);
             SwitchSpeakers();
-            CurrentSpeaker.Play(GetTrackByName(name));
+            PlayingTrack = GetTrackByName(name);
+            CurrentSpeaker.Play(PlayingTrack);
             CurrentSpeaker.FadeIn(CrossFadeTime);
         }
 

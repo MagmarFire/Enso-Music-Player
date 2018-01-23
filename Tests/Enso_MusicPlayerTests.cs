@@ -3,6 +3,7 @@ using UnityEngine.TestTools;
 using NUnit.Framework;
 using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace EnsoMusicPlayer
 {
@@ -264,6 +265,34 @@ namespace EnsoMusicPlayer
 
             // Assert
             Assert.IsNotNull(musicPlayer.PlayingTrack);
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_CrossfadeShouldSetCurrentTrack()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+            MusicTrack track = new MusicTrack
+            {
+                Name = "test",
+                Track = AudioClip.Create("test", 1000, 1, 1, false)
+            };
+            track.CreateAndCacheClips();
+
+            musicPlayer.Tracks.Add(track);
+
+            // Play(string) test
+            // Act
+            musicPlayer.Play("MusicTest");
+
+            yield return null;
+
+            musicPlayer.CrossFadeTo("test");
+
+            yield return null;
+
+            // Assert
+            Assert.AreNotSame(musicPlayer.PlayingTrack, musicPlayer.Tracks.Where(x => x.Name == "MusicTest").First());
         }
 
         private void SetUpModule()
