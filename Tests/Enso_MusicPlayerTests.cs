@@ -281,7 +281,6 @@ namespace EnsoMusicPlayer
 
             musicPlayer.Tracks.Add(track);
 
-            // Play(string) test
             // Act
             musicPlayer.Play("MusicTest");
 
@@ -295,6 +294,24 @@ namespace EnsoMusicPlayer
             Assert.AreNotSame(musicPlayer.PlayingTrack, musicPlayer.Tracks.Where(x => x.Name == "MusicTest").First());
         }
 
+        [UnityTest]
+        public IEnumerator Enso_FadeInAtPoint()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+            float fadeInPoint = 3f;
+
+            // Act
+            musicPlayer.FadeInAtPoint("MusicTest", fadeInPoint);
+
+            yield return null;
+
+            // Assert
+            Assert.IsTrue(musicPlayer.CurrentTime >= fadeInPoint);
+            Assert.AreEqual(Speaker.VolumeStatuses.FadingIn, module.VolumeStatus);
+        }
+
+        #region Setup
         private void SetUpModule()
         {
             GameObject player = new GameObject();
@@ -373,5 +390,7 @@ namespace EnsoMusicPlayer
                 UnityEngine.Object.Destroy(obj.gameObject);
             }
         }
+
+        #endregion
     }
 }

@@ -130,11 +130,33 @@ namespace EnsoMusicPlayer
         /// Plays the track starting at the given point on its timeline.
         /// </summary>
         /// <param name="track">The track to play</param>
-        /// <param name="time">The time to play the song at, in seconds</param>
+        /// <param name="time">The time to play the track at, in seconds</param>
         public void PlayAtPoint(MusicTrack track, float time)
         {
             CurrentSpeaker.SetVolume(Volume);
             CurrentSpeaker.PlayAtPoint(track, time);
+        }
+
+        /// <summary>
+        /// Fades in the track with the given name starting at the given point on its timeline.
+        /// </summary>
+        /// <param name="name">The name of the track</param>
+        /// <param name="time">The time to fade the track in at, in seconds</param>
+        public void FadeInAtPoint(string name, float time)
+        {
+            FadeInAtPoint(GetTrackByName(name), time);
+        }
+
+        /// <summary>
+        /// Fades in the given track starting at the given point on its timeline.
+        /// </summary>
+        /// <param name="track">The track to play</param>
+        /// <param name="time">The time to fade the track in at, in seconds</param>
+        public void FadeInAtPoint(MusicTrack track, float time)
+        {
+            PlayingTrack = track;
+            Scrub(time);
+            CurrentSpeaker.FadeIn(CrossFadeTime);
         }
 
         /// <summary>
@@ -206,9 +228,12 @@ namespace EnsoMusicPlayer
             PlayingTrack = null;
         }
 
-        #endregion
-
-        private MusicTrack GetTrackByName(string name)
+        /// <summary>
+        /// Gets a track by its playlist name.
+        /// </summary>
+        /// <param name="name">The name of the track</param>
+        /// <returns>The track with the given playlist name</returns>
+        public MusicTrack GetTrackByName(string name)
         {
             MusicTrack track
                 = (from t in Tracks
@@ -222,6 +247,8 @@ namespace EnsoMusicPlayer
 
             return track;
         }
+
+        #endregion
 
         /// <summary>
         /// Switches the primary speaker to the secondary one and vice versa.. Useful while crossfading.
