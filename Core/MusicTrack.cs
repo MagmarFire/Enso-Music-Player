@@ -78,7 +78,7 @@ namespace EnsoMusicPlayer
 
                     if (string.IsNullOrEmpty(looplengthTag))
                     {
-                        loadedLoopLength = 0;
+                        loadedLoopLength = Track.samples - Math.Min(Track.samples, LoopStart);
                     }
                     else
                     {
@@ -144,28 +144,29 @@ namespace EnsoMusicPlayer
             {
                 int channels = Track.channels;
                 float[] clipData = new float[Track.samples * channels];
-                int loopStartSampleCount = Math.Max(1, LoopStart * channels);
-                int loopLengthSampleCount = Math.Max(1, LoopLength * channels);
+                int loopStartSampleCount = Math.Max(0, LoopStart);
+                int loopLengthSampleCount = Math.Min(Track.samples - 1, Math.Max(1, LoopLength));
+                int introLength = Math.Max(1, LoopStart);
 
                 Track.GetData(clipData, 0);
 
                 IntroClip = AudioClip.Create(
                     Name + " intro",
-                    Math.Max(1, LoopStart),
+                    introLength,
                     channels,
                     Track.frequency,
                     false);
 
-                IntroClip.SetData(EnsoHelpers.Slice(clipData, 0, loopStartSampleCount), 0);
+                IntroClip.SetData(EnsoHelpers.Slice(clipData, 0, introLength * channels), 0);
 
                 LoopClip = AudioClip.Create(
                     Name + " loop",
-                    Math.Max(1, LoopLength),
+                    loopLengthSampleCount,
                     channels,
                     Track.frequency,
                     false);
 
-                LoopClip.SetData(EnsoHelpers.Slice(clipData, loopStartSampleCount, loopLengthSampleCount), 0);
+                LoopClip.SetData(EnsoHelpers.Slice(clipData, loopStartSampleCount * channels, loopLengthSampleCount * channels), 0);
             }
             catch (Exception e)
             {

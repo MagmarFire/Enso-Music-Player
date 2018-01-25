@@ -76,9 +76,32 @@ namespace EnsoMusicPlayer
                 LoopLength = 10
             };
             track.Track = clip;
+
+            // Act
             track.CreateAndCacheClips();
 
+            // Assert
             Assert.AreEqual(13, track.LengthInSamples);
+        }
+
+        [Test]
+        public void Enso_NoLoopSettings()
+        {
+            // Arrange
+            var clip = AudioClip.Create("test", 20, 2, 1, false);
+
+            MusicTrack track = new MusicTrack
+            {
+                Track = clip,
+                LoopStart = 0,
+                LoopLength = 0
+            };
+            track.Track = clip;
+
+            // Act
+            track.CreateAndCacheClips();
+
+            int test = 0;
         }
     }
 }
