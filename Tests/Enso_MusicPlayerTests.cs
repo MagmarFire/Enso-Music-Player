@@ -311,6 +311,28 @@ namespace EnsoMusicPlayer
             Assert.AreEqual(Speaker.VolumeStatuses.FadingIn, module.VolumeStatus);
         }
 
+        [UnityTest]
+        public IEnumerator Enso_CrossFadeAtPoint()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+            float fadeInPoint = 3f;
+
+            // Act
+            musicPlayer.Play("MusicTest");
+
+            yield return null;
+
+            musicPlayer.CrossFadeAtPoint("MusicTest", fadeInPoint);
+
+            yield return null;
+
+            // Assert
+            Assert.IsTrue(musicPlayer.CurrentTime >= fadeInPoint);
+            Assert.AreEqual(Speaker.VolumeStatuses.FadingOut, module.VolumeStatus);
+            Assert.AreEqual(Speaker.VolumeStatuses.FadingIn, module2.VolumeStatus);
+        }
+
         #region Setup
         private void SetUpModule()
         {

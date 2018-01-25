@@ -151,7 +151,7 @@ namespace EnsoMusicPlayer
         /// Fades in the given track starting at the given point on its timeline.
         /// </summary>
         /// <param name="track">The track to play</param>
-        /// <param name="time">The time to fade the track in at, in seconds</param>
+        /// <param name="time">The playback time for the next track, in seconds</param>
         public void FadeInAtPoint(MusicTrack track, float time)
         {
             PlayingTrack = track;
@@ -160,14 +160,45 @@ namespace EnsoMusicPlayer
         }
 
         /// <summary>
-        /// Crossfades to a music track.
+        /// Crossfades to the track with the given name at the given point on its timeline.
         /// </summary>
         /// <param name="name">The name of the track</param>
+        /// <param name="time">The playback time for the next track, in seconds</param>
+        public void CrossFadeAtPoint(string name, float time)
+        {
+            CrossFadeAtPoint(GetTrackByName(name), time);
+        }
+
+        /// <summary>
+        /// Crossfades to the given track at the given point on its timeline.
+        /// </summary>
+        /// <param name="track">The track to crossfade to</param>
+        /// <param name="time">The playback time for the next track, in seconds</param>
+        public void CrossFadeAtPoint(MusicTrack track, float time)
+        {
+            CrossFadeTo(track);
+            Scrub(time);
+            CurrentSpeaker.FadeIn(CrossFadeTime);
+        }
+
+        /// <summary>
+        /// Crossfades to a track.
+        /// </summary>
+        /// <param name="name">The name of the track to play</param>
         public void CrossFadeTo(string name)
+        {
+            CrossFadeTo(GetTrackByName(name));
+        }
+
+        /// <summary>
+        /// Crossfades to a track.
+        /// </summary>
+        /// <param name="track">The track to play</param>
+        public void CrossFadeTo(MusicTrack track)
         {
             CurrentSpeaker.FadeOut(CrossFadeTime, true);
             SwitchSpeakers();
-            PlayingTrack = GetTrackByName(name);
+            PlayingTrack = track;
             CurrentSpeaker.Play(PlayingTrack);
             CurrentSpeaker.FadeIn(CrossFadeTime);
         }
