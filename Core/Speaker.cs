@@ -134,6 +134,7 @@ namespace EnsoMusicPlayer
         {
             SetVolume(PlayerVolume);
             VolumeStatus = VolumeStatuses.Static;
+            Player.OnFadeInComplete();
         }
 
         private void OnFadeOutComplete()

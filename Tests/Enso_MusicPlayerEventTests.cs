@@ -25,7 +25,7 @@ public class Enso_MusicPlayerEventTests {
 		
 		yield return null;
 
-        musicPlayer.FadeOutComplete += new MusicPlayerEventHandler(TestFadeOutHandler);
+        musicPlayer.FadeOutComplete += new MusicPlayerEventHandler(TestHandler);
 
         musicPlayer.Play("MusicTest");
 
@@ -35,13 +35,36 @@ public class Enso_MusicPlayerEventTests {
 
         yield return new WaitForSeconds(2);
 
-        Assert.IsTrue(testFadeOutHandlerCalled);
+        Assert.IsTrue(testHandlerCalled);
 	}
 
-    private bool testFadeOutHandlerCalled = false;
-    private void TestFadeOutHandler(MusicPlayerEventArgs e)
+    // A UnityTest behaves like a coroutine in PlayMode
+    // and allows you to yield null to skip a frame in EditMode
+    [UnityTest]
+    public IEnumerator Enso_FadeInComplete()
     {
-        testFadeOutHandlerCalled = true;
+
+        SetUpMusicPlayer();
+
+        yield return null;
+
+        musicPlayer.FadeInComplete += new MusicPlayerEventHandler(TestHandler);
+
+        musicPlayer.Play("MusicTest");
+
+        yield return null;
+
+        musicPlayer.FadeIn();
+
+        yield return new WaitForSeconds(2);
+
+        Assert.IsTrue(testHandlerCalled);
+    }
+
+    private bool testHandlerCalled = false;
+    private void TestHandler(MusicPlayerEventArgs e)
+    {
+        testHandlerCalled = true;
     }
 
     #region Setup
@@ -100,6 +123,7 @@ public class Enso_MusicPlayerEventTests {
     {
         DestroyIfItExists(module);
         DestroyIfItExists(musicPlayer);
+        testHandlerCalled = false;
     }
 
     private MusicTrack CreateMockMusicTrack()

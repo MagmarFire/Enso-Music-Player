@@ -22,7 +22,7 @@ namespace EnsoMusicPlayer
         [UnityTest]
         public IEnumerator Enso_SpeakerHasAudioSource()
         {
-            SetUpModule();
+            SetUpMusicPlayer();
 
             // Use the Assert class to test conditions.
             // yield to skip a frame
@@ -129,7 +129,7 @@ namespace EnsoMusicPlayer
         [UnityTest]
         public IEnumerator Enso_FadeInTrack()
         {
-            SetUpModule();
+            SetUpMusicPlayer();
 
             yield return null;
 
@@ -334,19 +334,6 @@ namespace EnsoMusicPlayer
         }
 
         #region Setup
-        private void SetUpModule()
-        {
-            GameObject player = new GameObject();
-            player.AddComponent<AudioListener>();
-            module = player.AddComponent<Speaker>();
-
-            module.SetPlayerVolume(1f);
-
-            List<AudioSource> speakers = new List<AudioSource>(player.GetComponents<AudioSource>());
-
-            speaker1 = speakers[0];
-            speaker2 = speakers[1];
-        }
 
         private void SetUpMusicPlayer()
         {
