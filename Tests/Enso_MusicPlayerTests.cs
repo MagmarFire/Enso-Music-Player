@@ -35,7 +35,7 @@ namespace EnsoMusicPlayer
         [UnityTest]
         public IEnumerator Enso_FadeOutTrack()
         {
-            SetUpModule();
+            SetUpMusicPlayer();
 
             yield return null;
 

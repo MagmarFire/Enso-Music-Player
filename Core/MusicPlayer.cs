@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
 
@@ -59,6 +60,11 @@ namespace EnsoMusicPlayer
         }
 
         #region PublicAPI
+
+        /// <summary>
+        /// The event handler that is called when FadeOut completes.
+        /// </summary>
+        public event MusicPlayerEventHandler FadeOutComplete;
 
         /// <summary>
         /// The time of the current track.
@@ -280,6 +286,26 @@ namespace EnsoMusicPlayer
         }
 
         #endregion
+
+        /// <summary>
+        /// Called by a speaker that completes a fadeout.
+        /// </summary>
+        public void OnFadeOutComplete()
+        {
+            OnFadeOutComplete(new MusicPlayerEventArgs());
+        }
+
+        /// <summary>
+        /// Called when a speaker completes a fadeout.
+        /// </summary>
+        /// <param name="e">Event arguments</param>
+        private void OnFadeOutComplete(MusicPlayerEventArgs e)
+        {
+            if (FadeOutComplete != null)
+            {
+                FadeOutComplete(e);
+            }
+        }
 
         /// <summary>
         /// Switches the primary speaker to the secondary one and vice versa.. Useful while crossfading.

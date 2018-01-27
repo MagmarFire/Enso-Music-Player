@@ -35,8 +35,8 @@ namespace EnsoMusicPlayer
         public enum VolumeStatuses { FadingIn, FadingOut, Static }
         public VolumeStatuses VolumeStatus { get; private set; }
 
-        private float CrossFadeTimeLeft;
-        private float MaxCrossFadeTime;
+        private float FadeTimeLeft;
+        private float MaxFadeTime;
 
         private bool StopAfterFade { get; set; }
 
@@ -96,45 +96,57 @@ namespace EnsoMusicPlayer
         {
             if (VolumeStatus != VolumeStatuses.Static)
             {
-                if (CrossFadeTimeLeft > 0)
+                if (FadeTimeLeft > 0)
                 {
-                    CrossFadeTimeLeft -= Time.deltaTime;
+                    FadeTimeLeft -= Time.deltaTime;
                 }
             }
 
             switch (VolumeStatus)
             {
                 case VolumeStatuses.FadingIn:
-                    if (CrossFadeTimeLeft <= 0)
+                    if (FadeTimeLeft <= 0)
                     {
-                        SetVolume(PlayerVolume);
-                        VolumeStatus = VolumeStatuses.Static;
+                        OnFadeInComplete();
                     }
                     else
                     {
-                        float t = CrossFadeTimeLeft / MaxCrossFadeTime;
+                        float t = FadeTimeLeft / MaxFadeTime;
                         SetVolume(PlayerVolume * EnsoHelpers.CalculateEqualPowerCrossfade(t, true));
                     }
                     break;
 
                 case VolumeStatuses.FadingOut:
-                    if (CrossFadeTimeLeft <= 0)
+                    if (FadeTimeLeft <= 0)
                     {
-                        SetVolume(0);
-                        VolumeStatus = VolumeStatuses.Static;
-
-                        if (StopAfterFade)
-                        {
-                            Stop();
-                        }
+                        OnFadeOutComplete();
                     }
                     else
                     {
-                        float t = CrossFadeTimeLeft / MaxCrossFadeTime;
+                        float t = FadeTimeLeft / MaxFadeTime;
                         SetVolume(PlayerVolume * EnsoHelpers.CalculateEqualPowerCrossfade(t, false));
                     }
                     break;
             }
+        }
+
+        private void OnFadeInComplete()
+        {
+            SetVolume(PlayerVolume);
+            VolumeStatus = VolumeStatuses.Static;
+        }
+
+        private void OnFadeOutComplete()
+        {
+            SetVolume(0);
+            VolumeStatus = VolumeStatuses.Static;
+
+            if (StopAfterFade)
+            {
+                Stop();
+            }
+
+            Player.OnFadeOutComplete();
         }
 
         public void SetTrack(MusicTrack musicTrack)
@@ -237,18 +249,18 @@ namespace EnsoMusicPlayer
             SetVolume(PlayerVolume);
         }
 
-        internal void FadeOut(float crossFadeTime, bool stopAfterFade = false)
+        internal void FadeOut(float fadeTime, bool stopAfterFade = false)
         {
-            MaxCrossFadeTime = crossFadeTime;
-            CrossFadeTimeLeft = crossFadeTime;
+            MaxFadeTime = fadeTime;
+            FadeTimeLeft = fadeTime;
             VolumeStatus = VolumeStatuses.FadingOut;
             StopAfterFade = stopAfterFade;
         }
 
-        internal void FadeIn(float crossFadeTime)
+        internal void FadeIn(float fadeTime)
         {
-            MaxCrossFadeTime = crossFadeTime;
-            CrossFadeTimeLeft = crossFadeTime;
+            MaxFadeTime = fadeTime;
+            FadeTimeLeft = fadeTime;
             VolumeStatus = VolumeStatuses.FadingIn;
         }
     }
