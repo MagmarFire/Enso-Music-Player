@@ -121,7 +121,7 @@ namespace EnsoMusicPlayer
             if (PlayingTrack != null)
             {
                 time = Mathf.Min(time, PlayingTrack.LengthInSeconds);
-                CurrentSpeaker.SetPosition(PlayingTrack.TimeToSamples(time));
+                CurrentSpeaker.SetPosition(PlayingTrack, PlayingTrack.SecondsToSamples(time));
             }
         }
 
@@ -225,7 +225,6 @@ namespace EnsoMusicPlayer
         /// <summary>
         /// Unpauses the current track.
         /// </summary>
-        [Obsolete("Unpause is deprecated. Simply use Play instead.")]
         public void Unpause()
         {
             CurrentSpeaker.UnPause();

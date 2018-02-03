@@ -333,6 +333,82 @@ namespace EnsoMusicPlayer
             Assert.AreEqual(Speaker.VolumeStatuses.FadingIn, module2.VolumeStatus);
         }
 
+        [UnityTest]
+        public IEnumerator Enso_Scrub()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+            float scrubPoint = 3f;
+
+            // Act
+            musicPlayer.Play("MusicTest");
+
+            yield return null;
+
+            musicPlayer.Pause();
+
+            yield return null;
+
+            musicPlayer.Scrub(scrubPoint);
+
+            yield return null;
+
+            musicPlayer.Unpause();
+
+            // Assert
+            Assert.IsTrue(musicPlayer.CurrentTime >= scrubPoint);
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_ScrubbingShouldNotPlayTrackAfterPause()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+            float scrubPoint = 3f;
+
+            // Act
+            musicPlayer.Play("MusicTest");
+
+            yield return null;
+
+            musicPlayer.Pause();
+
+            yield return null;
+
+            musicPlayer.Scrub(scrubPoint);
+
+            yield return null;
+
+            // Assert
+            Assert.IsFalse(module2.IsPlaying);
+            Assert.IsFalse(module2.IsPlaying);
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_ScrubbingShouldNotPlayTrackAfterStop()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+            float scrubPoint = 3f;
+
+            // Act
+            musicPlayer.Play("MusicTest");
+
+            yield return null;
+
+            musicPlayer.Stop();
+
+            yield return null;
+
+            musicPlayer.Scrub(scrubPoint);
+
+            yield return null;
+
+            // Assert
+            Assert.IsFalse(module2.IsPlaying);
+            Assert.IsFalse(module2.IsPlaying);
+        }
+
         #region Setup
 
         private void SetUpMusicPlayer()
