@@ -10,7 +10,7 @@ namespace EnsoMusicPlayer
     {
         [Header("Volume Settings")]
         [Range(0f, 1f)]
-        public float Volume = 1f;
+        public float Volume = 1f; // Should be considered readonly outside the player's scope.
         // Remove this as soon as Unity supports C# 6; then we can simply use an auto-field initializer.
         private float PreviousVolume;
         public float CrossFadeTime = 2f;
