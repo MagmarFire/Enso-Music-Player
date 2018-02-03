@@ -80,6 +80,18 @@ namespace EnsoMusicPlayer
             }
         }
 
+        public int CurrentLengthInSamples
+        {
+            get
+            {
+                if (PlayingTrack != null)
+                {
+                    return PlayingTrack.LengthInSamples;
+                }
+                return 0;
+            }
+        }
+
         // Use this for initialization
         void Awake()
         {
@@ -157,7 +169,9 @@ namespace EnsoMusicPlayer
 
         public void Play(MusicTrack track)
         {
-            PlayAtPoint(track, 0f);
+            SetTrack(track);
+            PlayAtPosition(pausePosition);
+            pausePosition = 0;
         }
 
         public void PlayAtPoint(MusicTrack track, float time)
@@ -192,6 +206,11 @@ namespace EnsoMusicPlayer
 
         internal void Stop()
         {
+            if (!IsPaused)
+            {
+                pausePosition = 0;
+            }
+            
             IntroSource.Stop();
             LoopSource.Stop();
         }
@@ -224,6 +243,19 @@ namespace EnsoMusicPlayer
             }
         }
 
+        internal void SetPosition(int position)
+        {
+            if (IsPaused)
+            {
+                pausePosition = Math.Min(position, CurrentLengthInSamples);
+            }
+            else
+            {
+                PlayAtPosition(position);
+            }
+        }
+
+        // Remove this when Unpause() is removed from the player.
         internal void UnPause()
         {
             if (IsPaused)
