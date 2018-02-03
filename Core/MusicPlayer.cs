@@ -121,7 +121,7 @@ namespace EnsoMusicPlayer
             if (PlayingTrack != null)
             {
                 time = Mathf.Min(time, PlayingTrack.LengthInSeconds);
-                PlayAtPoint(PlayingTrack, time);
+                CurrentSpeaker.SetPosition(PlayingTrack, PlayingTrack.SecondsToSamples(time));
             }
         }
 

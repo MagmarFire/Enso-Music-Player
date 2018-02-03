@@ -80,6 +80,18 @@ namespace EnsoMusicPlayer
             }
         }
 
+        public int CurrentLengthInSamples
+        {
+            get
+            {
+                if (PlayingTrack != null)
+                {
+                    return PlayingTrack.LengthInSamples;
+                }
+                return 0;
+            }
+        }
+
         // Use this for initialization
         void Awake()
         {
@@ -157,7 +169,17 @@ namespace EnsoMusicPlayer
 
         public void Play(MusicTrack track)
         {
-            PlayAtPoint(track, 0f);
+            SetTrack(track);
+            PlayAtPoint(track, track.SamplesToSeconds(pausePosition));
+            pausePosition = 0;
+        }
+
+        public void PlayAtPoint(float time)
+        {
+            if (PlayingTrack != null)
+            {
+                PlayAtPoint(PlayingTrack, time);
+            }
         }
 
         public void PlayAtPoint(MusicTrack track, float time)
@@ -171,7 +193,7 @@ namespace EnsoMusicPlayer
             IntroSource.clip = PlayingTrack.IntroClip;
             LoopSource.clip = PlayingTrack.LoopClip;
 
-            PlayAtPosition(PlayingTrack.TimeToSamples(time));
+            PlayAtPosition(PlayingTrack.SecondsToSamples(time));
         }
 
         private void PlayAtPosition(int samplePosition)
@@ -192,6 +214,11 @@ namespace EnsoMusicPlayer
 
         internal void Stop()
         {
+            if (!IsPaused)
+            {
+                pausePosition = 0;
+            }
+            
             IntroSource.Stop();
             LoopSource.Stop();
         }
@@ -221,6 +248,19 @@ namespace EnsoMusicPlayer
             {
                 pausePosition = GetPositionInSamples();
                 Stop();
+            }
+        }
+
+        internal void SetPosition(MusicTrack track, int position)
+        {
+            SetTrack(track);
+            if (IsPaused)
+            {
+                pausePosition = Math.Min(position, CurrentLengthInSamples);
+            }
+            else
+            {
+                PlayAtPoint(PlayingTrack.SamplesToSeconds(position));
             }
         }
 

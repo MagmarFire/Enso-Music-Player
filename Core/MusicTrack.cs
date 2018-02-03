@@ -176,13 +176,34 @@ namespace EnsoMusicPlayer
         }
 
         /// <summary>
+        /// Converts the inputted time in samples to its equivalent in seconds.
+        /// </summary>
+        /// <param name="samples">The time in samples</param>
+        /// <returns>The time in seconds</returns>
+        public float SamplesToSeconds(int samples)
+        {
+            return Mathf.Min(LengthInSeconds, (float)samples / Track.frequency);
+        }
+
+        /// <summary>
         /// Converts the inputted time to its equivalent time in samples.
         /// </summary>
         /// <param name="time">The time in seconds</param>
         /// <returns>The time in samples</returns>
-        public int TimeToSamples(float time)
+        public int SecondsToSamples(float time)
         {
             return Math.Min(LengthInSamples, Convert.ToInt32(time * Track.frequency));
+        }
+
+        /// <summary>
+        /// Converts the inputted time to its equivalent time in samples.
+        /// </summary>
+        /// <param name="time">The time in seconds</param>
+        /// <returns>The time in samples</returns>
+        [Obsolete("This is a deprecated alias for SecondsToSamples. Use that instead.")]
+        public int TimeToSamples(float time)
+        {
+            return SecondsToSamples(time);
         }
 
         public virtual string ReadTrackMetadata(string name)
