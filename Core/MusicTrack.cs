@@ -39,15 +39,15 @@ namespace EnsoMusicPlayer
                 }
                 else
                 {
-                    string loopstartTag = ReadTrackMetadata("LOOPSTART");
+                    string loopstartTagValue = ReadTrackMetadata(EnsoConstants.LoopStartTag);
 
-                    if (string.IsNullOrEmpty(loopstartTag))
+                    if (string.IsNullOrEmpty(loopstartTagValue))
                     {
                         loadedLoopStart = 0;
                     }
                     else
                     {
-                        loadedLoopStart = int.Parse(loopstartTag);
+                        loadedLoopStart = int.Parse(loopstartTagValue);
                     }
 
                     return loadedLoopStart;
@@ -74,15 +74,15 @@ namespace EnsoMusicPlayer
                 }
                 else
                 {
-                    string looplengthTag = ReadTrackMetadata("LOOPLENGTH");
+                    string looplengthTagValue = ReadTrackMetadata(EnsoConstants.LoopLengthTag);
 
-                    if (string.IsNullOrEmpty(looplengthTag))
+                    if (string.IsNullOrEmpty(looplengthTagValue))
                     {
                         loadedLoopLength = Track.samples - Math.Min(Track.samples, LoopStart);
                     }
                     else
                     {
-                        loadedLoopLength = int.Parse(looplengthTag);
+                        loadedLoopLength = int.Parse(looplengthTagValue);
                     }
 
                     return loadedLoopLength;
