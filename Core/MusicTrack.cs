@@ -134,6 +134,24 @@ namespace EnsoMusicPlayer
         public AudioClip IntroClip{ get; private set; }
         public AudioClip LoopClip { get; private set; }
 
+        private Track trackAsset;
+        public Track TrackAsset
+        {
+            get
+            {
+                if (trackAsset == null)
+                {
+                    string trackPath = AssetDatabase.GetAssetPath(Track);
+
+                    if (string.IsNullOrEmpty(trackPath)) return null;
+
+                    trackAsset = new Track(trackPath);
+                }
+
+                return trackAsset;
+            }
+        }
+
         /// <summary>
         /// Splits the audio track into two separate tracks (the intro and the loop) and caches them.
         /// This MUST be called before the overall track can be played.
@@ -208,20 +226,31 @@ namespace EnsoMusicPlayer
 
         public virtual string ReadTrackMetadata(string name)
         {
-            string trackPath = AssetDatabase.GetAssetPath(Track);
-
-            if (string.IsNullOrEmpty(trackPath)) return string.Empty;
-
-            Track trackAsset = new Track(trackPath);
+            if (TrackAsset == null)
+            {
+                return string.Empty;
+            }
 
             try
             {
-                return trackAsset.AdditionalFields[name];
+                return TrackAsset.AdditionalFields[name];
             }
             catch
             {
                 Debug.LogWarning(string.Format(@"Field ""{0}"" does not exist for track ""{1}"".", name, Track.name));
                 return string.Empty;
+            }
+        }
+
+        public virtual int GetOriginalFrequency()
+        {
+            if (TrackAsset == null)
+            {
+                return 0;
+            }
+            else
+            {
+                return Convert.ToInt32(TrackAsset.SampleRate);
             }
         }
     }
