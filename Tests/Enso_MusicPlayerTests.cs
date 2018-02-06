@@ -173,8 +173,6 @@ namespace EnsoMusicPlayer
             track.CreateAndCacheClips();
             musicPlayer.Play(track);
 
-            float playerVolume = musicPlayer.Volume;
-
             yield return null;
 
             musicPlayer.FadeIn();

@@ -100,8 +100,23 @@ namespace EnsoMusicPlayer
 
             // Act
             track.CreateAndCacheClips();
+        }
 
-            int test = 0;
+        [Test]
+        public void Enso_FrequencyRatio()
+        {
+            // Arrange
+            var track = Substitute.For<MusicTrack>();
+
+            track.CompensateForFrequency = true;
+            track.OriginalFrequency.Returns(1000);
+            track.Frequency.Returns(2000);
+
+            // Act
+            float ratio = track.FrequencyRatio;
+
+            // Assert
+            Assert.AreEqual(2, ratio);
         }
     }
 }
