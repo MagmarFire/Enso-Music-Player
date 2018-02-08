@@ -43,8 +43,8 @@ namespace EnsoMusicPlayer
             // Arrange
             var track = Substitute.For<MusicTrack>();
 
-            track.ReadTrackMetadata(Arg.Is(EnsoConstants.LoopStartTag)).Returns("100");
-            track.ReadTrackMetadata(Arg.Is(EnsoConstants.LoopLengthTag)).Returns("40000");
+            track.ReadTrackMetadata(Arg.Is(EnsoConstants.LoopStartTag)).Returns("0");
+            track.ReadTrackMetadata(Arg.Is(EnsoConstants.LoopLengthTag)).Returns("0");
             track.LoopStart = 0;
             track.LoopLength = 0;
 

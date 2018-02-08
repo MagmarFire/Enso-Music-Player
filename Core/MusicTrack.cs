@@ -28,6 +28,9 @@ namespace EnsoMusicPlayer
         private int loadedLoopStart;
         private int loadedLoopLength;
 
+        private bool attemptedLoopStartRead;
+        private bool attemptedLoopLengthRead;
+
         public int LoopStart
         {
             get
@@ -42,15 +45,19 @@ namespace EnsoMusicPlayer
                 }
                 else
                 {
-                    string loopstartTagValue = ReadTrackMetadata(EnsoConstants.LoopStartTag);
+                    if (!attemptedLoopStartRead)
+                    {
+                        string loopstartTagValue = ReadTrackMetadata(EnsoConstants.LoopStartTag);
+                        attemptedLoopStartRead = true;
 
-                    if (string.IsNullOrEmpty(loopstartTagValue))
-                    {
-                        loadedLoopStart = 0;
-                    }
-                    else
-                    {
-                        loadedLoopStart = int.Parse(loopstartTagValue);
+                        if (string.IsNullOrEmpty(loopstartTagValue))
+                        {
+                            loadedLoopStart = 0;
+                        }
+                        else
+                        {
+                            loadedLoopStart = int.Parse(loopstartTagValue);
+                        }
                     }
 
                     return loadedLoopStart;
@@ -77,15 +84,19 @@ namespace EnsoMusicPlayer
                 }
                 else
                 {
-                    string looplengthTagValue = ReadTrackMetadata(EnsoConstants.LoopLengthTag);
+                    if (!attemptedLoopLengthRead)
+                    {
+                        string looplengthTagValue = ReadTrackMetadata(EnsoConstants.LoopLengthTag);
+                        attemptedLoopLengthRead = true;
 
-                    if (string.IsNullOrEmpty(looplengthTagValue))
-                    {
-                        loadedLoopLength = Track.samples - Math.Min(Track.samples, LoopStart);
-                    }
-                    else
-                    {
-                        loadedLoopLength = int.Parse(looplengthTagValue);
+                        if (string.IsNullOrEmpty(looplengthTagValue))
+                        {
+                            loadedLoopLength = Track.samples - Math.Min(Track.samples, LoopStart);
+                        }
+                        else
+                        {
+                            loadedLoopLength = int.Parse(looplengthTagValue);
+                        }
                     }
 
                     return loadedLoopLength;
