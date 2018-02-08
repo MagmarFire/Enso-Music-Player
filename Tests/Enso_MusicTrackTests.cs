@@ -118,5 +118,23 @@ namespace EnsoMusicPlayer
             // Assert
             Assert.AreEqual(2, ratio);
         }
+
+        [Test]
+        public void Enso_OutOfBoundsFailsafe()
+        {
+            // Arrange
+            var clip = AudioClip.Create("test", 20, 2, 1, false);
+
+            MusicTrack track = new MusicTrack
+            {
+                Track = clip,
+                LoopStart = 10,
+                LoopLength = 50
+            };
+            track.Track = clip;
+
+            // Act
+            track.CreateAndCacheClips();
+        }
     }
 }
