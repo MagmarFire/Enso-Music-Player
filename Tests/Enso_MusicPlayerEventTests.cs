@@ -4,17 +4,11 @@ using NUnit.Framework;
 using System.Collections;
 using EnsoMusicPlayer;
 using System.Collections.Generic;
-using System;
 
 public class Enso_MusicPlayerEventTests {
 
     MusicPlayer musicPlayer;
     Speaker module;
-    Speaker module2;
-    AudioSource speaker1;
-    AudioSource speaker2;
-    AudioSource speaker3;
-    AudioSource speaker4;
 
     // A UnityTest behaves like a coroutine in PlayMode
     // and allows you to yield null to skip a frame in EditMode
@@ -75,11 +69,6 @@ public class Enso_MusicPlayerEventTests {
         module = player.AddComponent<Speaker>();
 
         module.SetPlayerVolume(1f);
-
-        List<AudioSource> speakers = new List<AudioSource>(player.GetComponents<AudioSource>());
-
-        speaker1 = speakers[0];
-        speaker2 = speakers[1];
     }
 
     private void SetUpMusicPlayer()
@@ -110,12 +99,6 @@ public class Enso_MusicPlayerEventTests {
         Speaker[] modules = player.GetComponents<Speaker>();
 
         module = modules[0];
-        module2 = modules[1];
-
-        speaker1 = module.IntroSource;
-        speaker2 = module.LoopSource;
-        speaker3 = module2.IntroSource;
-        speaker4 = module2.LoopSource;
     }
 
     [TearDown]
@@ -147,6 +130,5 @@ public class Enso_MusicPlayerEventTests {
             UnityEngine.Object.Destroy(obj.gameObject);
         }
     }
-
     #endregion
 }
