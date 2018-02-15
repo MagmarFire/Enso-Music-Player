@@ -203,7 +203,7 @@ namespace EnsoMusicPlayer
                 IntroSource.timeSamples = samplePosition;
                 LoopSource.timeSamples = 0;
                 IntroSource.Play();
-                LoopSource.PlayDelayed((float)(IntroSource.clip.samples - samplePosition) / IntroSource.clip.frequency);
+                LoopSource.PlayDelayed(PlayingTrack.SamplesToSeconds(IntroSource.clip.samples - samplePosition));
             }
             else
             {

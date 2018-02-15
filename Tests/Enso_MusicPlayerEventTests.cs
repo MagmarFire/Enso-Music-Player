@@ -32,8 +32,6 @@ public class Enso_MusicPlayerEventTests {
         Assert.IsTrue(testHandlerCalled);
 	}
 
-    // A UnityTest behaves like a coroutine in PlayMode
-    // and allows you to yield null to skip a frame in EditMode
     [UnityTest]
     public IEnumerator Enso_FadeInComplete()
     {
@@ -55,10 +53,28 @@ public class Enso_MusicPlayerEventTests {
         Assert.IsTrue(testHandlerCalled);
     }
 
+    [UnityTest]
+    public IEnumerator Enso_TrackEndOrLoop()
+    {
+        SetUpMusicPlayer();
+
+        yield return null;
+
+        musicPlayer.TrackEndOrLoop += new MusicPlayerEventHandler(TestHandler);
+
+        musicPlayer.Play("QuickTest");
+
+        yield return new WaitForSeconds(1);
+
+        Assert.IsTrue(timesHandlerCalled >= 4);
+    }
+
     private bool testHandlerCalled = false;
+    private int timesHandlerCalled = 0;
     private void TestHandler(MusicPlayerEventArgs e)
     {
         testHandlerCalled = true;
+        timesHandlerCalled++;
     }
 
     #region Setup
@@ -88,6 +104,15 @@ public class Enso_MusicPlayerEventTests {
                         sampleLoopStart = 2,
                         sampleLoopLength = 3
                     }
+                },
+                new MusicTrack
+                {
+                    Name = "QuickTest",
+                    Track = AudioClip.Create("QuickTest", 10000, 1, 50000, false), // 1/5 of a second long total
+                    loopPoints = new MusicTrack.LoopPoints
+                    {
+                        sampleLoopStart = 200
+                    }
                 }
             };
 
@@ -107,6 +132,7 @@ public class Enso_MusicPlayerEventTests {
         DestroyIfItExists(module);
         DestroyIfItExists(musicPlayer);
         testHandlerCalled = false;
+        timesHandlerCalled = 0;
     }
 
     private MusicTrack CreateMockMusicTrack()
