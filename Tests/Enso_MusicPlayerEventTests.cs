@@ -4,6 +4,7 @@ using NUnit.Framework;
 using System.Collections;
 using EnsoMusicPlayer;
 using System.Collections.Generic;
+using System;
 
 public class Enso_MusicPlayerEventTests {
 
@@ -66,15 +67,42 @@ public class Enso_MusicPlayerEventTests {
 
         yield return new WaitForSeconds(1);
 
-        Assert.IsTrue(timesHandlerCalled >= 4);
+        Assert.AreEqual(5, timesHandlerCalled);
+    }
+
+    [UnityTest]
+    public IEnumerator Enso_TrackEndOrLoopCallbackCalledRightAtTheEnd()
+    {
+        SetUpMusicPlayer();
+
+        yield return null;
+
+        musicPlayer.TrackEndOrLoop += new MusicPlayerEventHandler(TestHandler);
+        float lengthInSeconds = musicPlayer.GetTrackByName("QuickTest").LengthInSeconds;
+
+        musicPlayer.Play("QuickTest");
+        DateTime timeAtPlayStart = DateTime.Now;
+
+        yield return new WaitForSeconds(.20f);
+
+        Assert.IsTrue(IsWithinMargin((float)timeAtCallback.Subtract(timeAtPlayStart).TotalSeconds, lengthInSeconds, .1f));
+
+        Assert.Fail("We must test all the times after the first loop to ensure the expected times don't diverge after a few iterations.");
     }
 
     private bool testHandlerCalled = false;
     private int timesHandlerCalled = 0;
+    private DateTime timeAtCallback;
     private void TestHandler(MusicPlayerEventArgs e)
     {
         testHandlerCalled = true;
         timesHandlerCalled++;
+        timeAtCallback = DateTime.Now;
+    }
+
+    private bool IsWithinMargin(float input, float goal, float margin)
+    {
+        return input >= goal - margin && input <= goal + margin;
     }
 
     #region Setup
