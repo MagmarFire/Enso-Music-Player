@@ -5,11 +5,13 @@ using System.Collections;
 using EnsoMusicPlayer;
 using System.Collections.Generic;
 using System;
+using System.Diagnostics;
 
 public class Enso_MusicPlayerEventTests {
 
     MusicPlayer musicPlayer;
     Speaker module;
+    Stopwatch watch = new Stopwatch();
 
     // A UnityTest behaves like a coroutine in PlayMode
     // and allows you to yield null to skip a frame in EditMode
@@ -79,25 +81,57 @@ public class Enso_MusicPlayerEventTests {
 
         musicPlayer.TrackEndOrLoop += new MusicPlayerEventHandler(TestHandler);
         float lengthInSeconds = musicPlayer.GetTrackByName("QuickTest").LengthInSeconds;
+        float loopLengthInSeconds = musicPlayer.GetTrackByName("QuickTest").LoopClip.length;
 
         musicPlayer.Play("QuickTest");
-        DateTime timeAtPlayStart = DateTime.Now;
+        watch.Start();
 
-        yield return new WaitForSeconds(.20f);
+        yield return new WaitForSeconds(.2f);
 
-        Assert.IsTrue(IsWithinMargin((float)timeAtCallback.Subtract(timeAtPlayStart).TotalSeconds, lengthInSeconds, .1f));
+        Assert.IsTrue(IsWithinMargin(lastWatchElapsedTime, lengthInSeconds, .1f));
+    }
 
-        Assert.Fail("We must test all the times after the first loop to ensure the expected times don't diverge after a few iterations.");
+    [UnityTest]
+    public IEnumerator Enso_TrackEndOrLoopCallbackConsistencyTest()
+    {
+        SetUpMusicPlayer();
+
+        yield return null;
+
+        musicPlayer.TrackEndOrLoop += new MusicPlayerEventHandler(ConsistencyTestHandler);
+        float lengthInSeconds = musicPlayer.GetTrackByName("QuickTest").LengthInSeconds;
+        float loopLengthInSeconds = musicPlayer.GetTrackByName("QuickTest").LoopClip.length;
+
+        musicPlayer.Play("QuickTest");
+        watch.Start();
+
+        yield return new WaitForSeconds(4f);
+    }
+
+    private void ConsistencyTestHandler(MusicPlayerEventArgs e)
+    {
+        watch.Stop();
+        timesHandlerCalled++;
+        lastWatchElapsedTime = watch.ElapsedMilliseconds / 1000f;
+        float lengthInSeconds = musicPlayer.GetTrackByName("QuickTest").LoopClip.length;
+
+        Assert.IsTrue(IsWithinMargin(lastWatchElapsedTime, lengthInSeconds, .1f),
+            string.Format("Elapsed time: {0}, length in seconds: {1}, iteration: {2}", lastWatchElapsedTime, lengthInSeconds, timesHandlerCalled));
+
+        watch.Reset();
+        watch.Start();
     }
 
     private bool testHandlerCalled = false;
     private int timesHandlerCalled = 0;
-    private DateTime timeAtCallback;
+    private float lastWatchElapsedTime = 0f;
     private void TestHandler(MusicPlayerEventArgs e)
     {
+        watch.Stop();
         testHandlerCalled = true;
         timesHandlerCalled++;
-        timeAtCallback = DateTime.Now;
+        lastWatchElapsedTime = watch.ElapsedMilliseconds / 1000f;
+        watch.Reset();
     }
 
     private bool IsWithinMargin(float input, float goal, float margin)
