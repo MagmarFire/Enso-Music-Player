@@ -4,11 +4,14 @@ using NUnit.Framework;
 using System.Collections;
 using EnsoMusicPlayer;
 using System.Collections.Generic;
+using System;
+using System.Diagnostics;
 
 public class Enso_MusicPlayerEventTests {
 
     MusicPlayer musicPlayer;
     Speaker module;
+    Stopwatch watch = new Stopwatch();
 
     // A UnityTest behaves like a coroutine in PlayMode
     // and allows you to yield null to skip a frame in EditMode
@@ -32,8 +35,6 @@ public class Enso_MusicPlayerEventTests {
         Assert.IsTrue(testHandlerCalled);
 	}
 
-    // A UnityTest behaves like a coroutine in PlayMode
-    // and allows you to yield null to skip a frame in EditMode
     [UnityTest]
     public IEnumerator Enso_FadeInComplete()
     {
@@ -55,10 +56,87 @@ public class Enso_MusicPlayerEventTests {
         Assert.IsTrue(testHandlerCalled);
     }
 
+    [UnityTest]
+    public IEnumerator Enso_TrackEndOrLoop()
+    {
+        SetUpMusicPlayer();
+
+        yield return null;
+
+        musicPlayer.TrackEndOrLoop += new MusicPlayerEventHandler(TestHandler);
+
+        musicPlayer.Play("QuickTest");
+
+        yield return new WaitForSeconds(1);
+
+        Assert.AreEqual(5, timesHandlerCalled);
+    }
+
+    [UnityTest]
+    public IEnumerator Enso_TrackEndOrLoopCallbackCalledRightAtTheEnd()
+    {
+        SetUpMusicPlayer();
+
+        yield return null;
+
+        musicPlayer.TrackEndOrLoop += new MusicPlayerEventHandler(TestHandler);
+        float lengthInSeconds = musicPlayer.GetTrackByName("QuickTest").LengthInSeconds;
+        float loopLengthInSeconds = musicPlayer.GetTrackByName("QuickTest").LoopClip.length;
+
+        musicPlayer.Play("QuickTest");
+        watch.Start();
+
+        yield return new WaitForSeconds(.2f);
+
+        Assert.IsTrue(IsWithinMargin(lastWatchElapsedTime, lengthInSeconds, .1f));
+    }
+
+    [UnityTest]
+    public IEnumerator Enso_TrackEndOrLoopCallbackConsistencyTest()
+    {
+        SetUpMusicPlayer();
+
+        yield return null;
+
+        musicPlayer.TrackEndOrLoop += new MusicPlayerEventHandler(ConsistencyTestHandler);
+        float lengthInSeconds = musicPlayer.GetTrackByName("QuickTest").LengthInSeconds;
+        float loopLengthInSeconds = musicPlayer.GetTrackByName("QuickTest").LoopClip.length;
+
+        musicPlayer.Play("QuickTest");
+        watch.Start();
+
+        yield return new WaitForSeconds(4f);
+    }
+
+    private void ConsistencyTestHandler(MusicPlayerEventArgs e)
+    {
+        watch.Stop();
+        timesHandlerCalled++;
+        lastWatchElapsedTime = watch.ElapsedMilliseconds / 1000f;
+        float lengthInSeconds = musicPlayer.GetTrackByName("QuickTest").LoopClip.length;
+
+        Assert.IsTrue(IsWithinMargin(lastWatchElapsedTime, lengthInSeconds, .1f),
+            string.Format("Elapsed time: {0}, length in seconds: {1}, iteration: {2}", lastWatchElapsedTime, lengthInSeconds, timesHandlerCalled));
+
+        watch.Reset();
+        watch.Start();
+    }
+
     private bool testHandlerCalled = false;
+    private int timesHandlerCalled = 0;
+    private float lastWatchElapsedTime = 0f;
     private void TestHandler(MusicPlayerEventArgs e)
     {
+        watch.Stop();
         testHandlerCalled = true;
+        timesHandlerCalled++;
+        lastWatchElapsedTime = watch.ElapsedMilliseconds / 1000f;
+        watch.Reset();
+    }
+
+    private bool IsWithinMargin(float input, float goal, float margin)
+    {
+        return input >= goal - margin && input <= goal + margin;
     }
 
     #region Setup
@@ -88,6 +166,15 @@ public class Enso_MusicPlayerEventTests {
                         sampleLoopStart = 2,
                         sampleLoopLength = 3
                     }
+                },
+                new MusicTrack
+                {
+                    Name = "QuickTest",
+                    Track = AudioClip.Create("QuickTest", 10000, 1, 50000, false), // 1/5 of a second long total
+                    loopPoints = new MusicTrack.LoopPoints
+                    {
+                        sampleLoopStart = 200
+                    }
                 }
             };
 
@@ -107,6 +194,7 @@ public class Enso_MusicPlayerEventTests {
         DestroyIfItExists(module);
         DestroyIfItExists(musicPlayer);
         testHandlerCalled = false;
+        timesHandlerCalled = 0;
     }
 
     private MusicTrack CreateMockMusicTrack()

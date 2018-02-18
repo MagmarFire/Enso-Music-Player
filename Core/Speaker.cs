@@ -142,6 +142,7 @@ namespace EnsoMusicPlayer
             }
         }
 
+        #region Event Callback
         private void OnFadeInComplete()
         {
             SetVolume(PlayerVolume);
@@ -161,6 +162,12 @@ namespace EnsoMusicPlayer
 
             Player.OnFadeOutComplete();
         }
+
+        private void OnTrackEndOrLoop()
+        {
+            Player.OnTrackEndOrLoop();
+        }
+        #endregion
 
         public void SetTrack(MusicTrack musicTrack)
         {
@@ -203,13 +210,17 @@ namespace EnsoMusicPlayer
                 IntroSource.timeSamples = samplePosition;
                 LoopSource.timeSamples = 0;
                 IntroSource.Play();
-                LoopSource.PlayDelayed((float)(IntroSource.clip.samples - samplePosition) / IntroSource.clip.frequency);
+                LoopSource.PlayDelayed(PlayingTrack.SamplesToSeconds(IntroSource.clip.samples - samplePosition));
             }
             else
             {
                 LoopSource.timeSamples = samplePosition - IntroSource.clip.samples;
                 LoopSource.Play();
             }
+
+            InvokeRepeating("OnTrackEndOrLoop",
+                PlayingTrack.SamplesToSeconds(PlayingTrack.LengthInSamples - samplePosition),
+                PlayingTrack.SamplesToSeconds(PlayingTrack.LoopLength));
         }
 
         internal void Stop()
@@ -221,6 +232,8 @@ namespace EnsoMusicPlayer
             
             IntroSource.Stop();
             LoopSource.Stop();
+
+            CancelInvoke();
         }
 
         private int GetPositionInSamples()

@@ -72,6 +72,11 @@ namespace EnsoMusicPlayer
         public event MusicPlayerEventHandler FadeInComplete;
 
         /// <summary>
+        /// The event handler that is called when a track ends or loops.
+        /// </summary>
+        public event MusicPlayerEventHandler TrackEndOrLoop;
+
+        /// <summary>
         /// The time of the current track.
         /// </summary>
         public float CurrentTime
@@ -300,9 +305,20 @@ namespace EnsoMusicPlayer
             OnFadeOutComplete(new MusicPlayerEventArgs());
         }
 
+        /// <summary>
+        /// Called by a speaker that completes a fade in.
+        /// </summary>
         public void OnFadeInComplete()
         {
             OnFadeInComplete(new MusicPlayerEventArgs());
+        }
+
+        /// <summary>
+        /// Called by a speaker that has a track loop or end.
+        /// </summary>
+        public void OnTrackEndOrLoop()
+        {
+            OnTrackEndOrLoop(new MusicPlayerEventArgs());
         }
 
         /// <summary>
@@ -326,6 +342,18 @@ namespace EnsoMusicPlayer
             if (FadeInComplete != null)
             {
                 FadeInComplete(e);
+            }
+        }
+
+        /// <summary>
+        /// Called when a track on the current speaker loops or ends.
+        /// </summary>
+        /// <param name="e">Event arguments</param>
+        private void OnTrackEndOrLoop(MusicPlayerEventArgs e)
+        {
+            if (TrackEndOrLoop != null)
+            {
+                TrackEndOrLoop(e);
             }
         }
 
