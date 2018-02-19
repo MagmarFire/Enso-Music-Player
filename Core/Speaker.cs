@@ -41,6 +41,7 @@ namespace EnsoMusicPlayer
         private bool StopAfterFade { get; set; }
 
         private int pausePosition;
+        private int numberOfLoopsLeft;
         public bool IsPaused
         {
             get
@@ -165,6 +166,20 @@ namespace EnsoMusicPlayer
 
         private void OnTrackEndOrLoop()
         {
+            if (numberOfLoopsLeft > 0)
+            {
+                numberOfLoopsLeft--;
+
+                if (numberOfLoopsLeft > 0)
+                {
+                    // OnTrackLoop
+                }
+                else
+                {
+                    Stop();
+                    // OnTrackEnd
+                }
+            }
             Player.OnTrackEndOrLoop();
         }
         #endregion
@@ -174,22 +189,38 @@ namespace EnsoMusicPlayer
             PlayingTrack = musicTrack;
         }
 
-        public void Play(MusicTrack track)
+        /// <summary>
+        /// Plays the given track.
+        /// </summary>
+        /// <param name="track">The track to play</param>
+        /// <param name="numberOfLoops">The number of times to loop the track. Set to 0 for endless play.</param>
+        public void Play(MusicTrack track, int numberOfLoops)
         {
             SetTrack(track);
-            PlayAtPoint(track, track.SamplesToSeconds(pausePosition));
+            PlayAtPoint(track, track.SamplesToSeconds(pausePosition), numberOfLoops);
             pausePosition = 0;
         }
 
-        public void PlayAtPoint(float time)
+        /// <summary>
+        /// Plays the current track starting at the given play position.
+        /// </summary>
+        /// <param name="time">The time to play the track at, in seconds</param>
+        /// <param name="numberOfLoops">The number of times to loop the track. Set to 0 for endless play.</param>
+        public void PlayAtPoint(float time, int numberOfLoops)
         {
             if (PlayingTrack != null)
             {
-                PlayAtPoint(PlayingTrack, time);
+                PlayAtPoint(PlayingTrack, time, numberOfLoops);
             }
         }
 
-        public void PlayAtPoint(MusicTrack track, float time)
+        /// <summary>
+        /// Plays the given track starting at the given play position.
+        /// </summary>
+        /// <param name="track">The track to play</param>
+        /// <param name="time">The time to play the track at, in seconds</param>
+        /// <param name="numberOfLoops">The number of times to loop the track. Set to 0 for endless play.</param>
+        public void PlayAtPoint(MusicTrack track, float time, int numberOfLoops)
         {
             pausePosition = 0;
             Stop();
@@ -200,10 +231,15 @@ namespace EnsoMusicPlayer
             IntroSource.clip = PlayingTrack.IntroClip;
             LoopSource.clip = PlayingTrack.LoopClip;
 
-            PlayAtPosition(PlayingTrack.SecondsToSamples(time));
+            PlayAtPosition(PlayingTrack.SecondsToSamples(time), numberOfLoops);
         }
 
-        private void PlayAtPosition(int samplePosition)
+        /// <summary>
+        /// Plays the current track starting at the given play position.
+        /// </summary>
+        /// <param name="samplePosition">The play position, in samples</param>
+        /// <param name="numberOfLoops">The number of times to loop the track. Set to 0 for endless play.</param>
+        private void PlayAtPosition(int samplePosition, int numberOfLoops)
         {
             if (samplePosition <= IntroSource.clip.samples)
             {
@@ -218,6 +254,7 @@ namespace EnsoMusicPlayer
                 LoopSource.Play();
             }
 
+            numberOfLoopsLeft = numberOfLoops;
             InvokeRepeating("OnTrackEndOrLoop",
                 PlayingTrack.SamplesToSeconds(PlayingTrack.LengthInSamples - samplePosition),
                 PlayingTrack.SamplesToSeconds(PlayingTrack.LoopLength));
@@ -273,7 +310,7 @@ namespace EnsoMusicPlayer
             }
             else
             {
-                PlayAtPoint(PlayingTrack.SamplesToSeconds(position));
+                PlayAtPoint(PlayingTrack.SamplesToSeconds(position), numberOfLoopsLeft);
             }
         }
 
@@ -281,7 +318,7 @@ namespace EnsoMusicPlayer
         {
             if (IsPaused)
             {
-                PlayAtPosition(pausePosition);
+                PlayAtPosition(pausePosition, numberOfLoopsLeft);
                 pausePosition = 0;
             }
         }

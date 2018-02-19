@@ -102,19 +102,21 @@ namespace EnsoMusicPlayer
         /// Play a music track.
         /// </summary>
         /// <param name="name">The name of the track</param>
-        public void Play(string name)
+        /// <param name="timesToLoop">The number of times to loop the track. Set to 0 for endless play.</param>
+        public void Play(string name, int timesToLoop = 0)
         {
-            Play(GetTrackByName(name));
+            Play(GetTrackByName(name), timesToLoop);
         }
 
         /// <summary>
         /// Play a music track.
         /// </summary>
         /// <param name="track">The track to play</param>
-        public void Play(MusicTrack track)
+        /// <param name="timesToLoop">The number of times to loop the track. Set to 0 for endless play.</param>
+        public void Play(MusicTrack track, int timesToLoop = 0)
         {
             PlayingTrack = track;
-            PlayAtPoint(track, 0f);
+            PlayAtPoint(track, 0f, timesToLoop);
         }
 
         /// <summary>
@@ -147,10 +149,11 @@ namespace EnsoMusicPlayer
         /// </summary>
         /// <param name="track">The track to play</param>
         /// <param name="time">The time to play the track at, in seconds</param>
-        public void PlayAtPoint(MusicTrack track, float time)
+        /// <param name="timesToLoop">The number of times to loop the track. Set to 0 for endless play.</param>
+        public void PlayAtPoint(MusicTrack track, float time, int timesToLoop = 0)
         {
             CurrentSpeaker.SetVolume(Volume);
-            CurrentSpeaker.PlayAtPoint(track, time);
+            CurrentSpeaker.PlayAtPoint(track, time, timesToLoop);
         }
 
         /// <summary>
@@ -180,9 +183,10 @@ namespace EnsoMusicPlayer
         /// </summary>
         /// <param name="name">The name of the track</param>
         /// <param name="time">The playback time for the next track, in seconds</param>
-        public void CrossFadeAtPoint(string name, float time)
+        /// <param name="timesToLoop">The number of times to loop the track. Set to 0 for endless play.</param>
+        public void CrossFadeAtPoint(string name, float time, int timesToLoop = 0)
         {
-            CrossFadeAtPoint(GetTrackByName(name), time);
+            CrossFadeAtPoint(GetTrackByName(name), time, timesToLoop);
         }
 
         /// <summary>
@@ -190,9 +194,10 @@ namespace EnsoMusicPlayer
         /// </summary>
         /// <param name="track">The track to crossfade to</param>
         /// <param name="time">The playback time for the next track, in seconds</param>
-        public void CrossFadeAtPoint(MusicTrack track, float time)
+        /// <param name="timesToLoop">The number of times to loop the track. Set to 0 for endless play.</param>
+        public void CrossFadeAtPoint(MusicTrack track, float time, int timesToLoop = 0)
         {
-            CrossFadeTo(track);
+            CrossFadeTo(track, timesToLoop);
             Scrub(time);
             CurrentSpeaker.FadeIn(CrossFadeTime);
         }
@@ -201,21 +206,22 @@ namespace EnsoMusicPlayer
         /// Crossfades to a track.
         /// </summary>
         /// <param name="name">The name of the track to play</param>
-        public void CrossFadeTo(string name)
+        /// <param name="timesToLoop">The number of times to loop the track. Set to 0 for endless play.</param>
+        public void CrossFadeTo(string name, int timesToLoop = 0)
         {
-            CrossFadeTo(GetTrackByName(name));
+            CrossFadeTo(GetTrackByName(name), timesToLoop);
         }
 
         /// <summary>
         /// Crossfades to a track.
         /// </summary>
         /// <param name="track">The track to play</param>
-        public void CrossFadeTo(MusicTrack track)
+        public void CrossFadeTo(MusicTrack track, int timesToLoop = 0)
         {
             CurrentSpeaker.FadeOut(CrossFadeTime, true);
             SwitchSpeakers();
             PlayingTrack = track;
-            CurrentSpeaker.Play(PlayingTrack);
+            CurrentSpeaker.Play(PlayingTrack, timesToLoop);
             CurrentSpeaker.FadeIn(CrossFadeTime);
         }
 
