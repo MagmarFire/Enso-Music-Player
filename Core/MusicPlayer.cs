@@ -77,6 +77,16 @@ namespace EnsoMusicPlayer
         public event MusicPlayerEventHandler TrackEndOrLoop;
 
         /// <summary>
+        /// The event handler that is called when a track ends from finite play.
+        /// </summary>
+        public event MusicPlayerEventHandler TrackEnd;
+
+        /// <summary>
+        /// The event handler that is called when a track loops.
+        /// </summary>
+        public event MusicPlayerEventHandler TrackLoop;
+
+        /// <summary>
         /// The time of the current track.
         /// </summary>
         public float CurrentTime
@@ -328,6 +338,22 @@ namespace EnsoMusicPlayer
         }
 
         /// <summary>
+        /// Called by a speaker that has a track end finite play.
+        /// </summary>
+        public void OnTrackEnd()
+        {
+            OnTrackEnd(new MusicPlayerEventArgs());
+        }
+
+        /// <summary>
+        /// Called by a speaker that has a track loop. Does not get called if it ended finite play.
+        /// </summary>
+        public void OnTrackLoop()
+        {
+            OnTrackLoop(new MusicPlayerEventArgs());
+        }
+
+        /// <summary>
         /// Called when a speaker completes a fadeout.
         /// </summary>
         /// <param name="e">Event arguments</param>
@@ -360,6 +386,30 @@ namespace EnsoMusicPlayer
             if (TrackEndOrLoop != null)
             {
                 TrackEndOrLoop(e);
+            }
+        }
+
+        /// <summary>
+        /// Called when a track on the current speaker ends in finite play.
+        /// </summary>
+        /// <param name="e"></param>
+        private void OnTrackEnd(MusicPlayerEventArgs e)
+        {
+            if (TrackEnd != null)
+            {
+                TrackEnd(e);
+            }
+        }
+
+        /// <summary>
+        /// Called when a track on the current speaker loops.
+        /// </summary>
+        /// <param name="e"></param>
+        private void OnTrackLoop(MusicPlayerEventArgs e)
+        {
+            if (TrackLoop != null)
+            {
+                TrackLoop(e);
             }
         }
 

@@ -421,6 +421,8 @@ namespace EnsoMusicPlayer
 
             // Assert
             Assert.AreEqual(3, timesPlayed);
+            Assert.IsFalse(module.IsPlaying);
+            Assert.IsFalse(module2.IsPlaying);
         }
 
         [UnityTest]
@@ -428,7 +430,7 @@ namespace EnsoMusicPlayer
         {
             // Arrange
             SetUpMusicPlayer();
-            musicPlayer.TrackEndOrLoop += PlayFinitely_TrackEndOrLoop;
+            musicPlayer.TrackLoop += PlayFinitely_TrackEndOrLoop;
 
             // Act
             musicPlayer.Play("QuickTest", 3);
@@ -440,7 +442,7 @@ namespace EnsoMusicPlayer
             yield return new WaitForSeconds(.2f);
 
             // Assert
-            Assert.AreEqual(3, timesPlayed);
+            Assert.AreEqual(2, timesPlayed);
         }
 
         [UnityTest]
@@ -448,20 +450,24 @@ namespace EnsoMusicPlayer
         {
             // Arrange
             SetUpMusicPlayer();
-            musicPlayer.TrackEndOrLoop += PlayFinitely_TrackEndOrLoop;
+            musicPlayer.TrackEnd += Enso_ScrubAfterFinitePlayEndsShouldNotPlayAgainCallback;
 
             // Act
             musicPlayer.Play("QuickTest", 3);
 
-            yield return new WaitForSeconds(.051f);
+            // Assert is in callback
+            yield return new WaitForSeconds(.7f);
+        }
 
+        private void Enso_ScrubAfterFinitePlayEndsShouldNotPlayAgainCallback(MusicPlayerEventArgs e)
+        {
+            // Act
             musicPlayer.ScrubAsPercentage(.5f);
 
-            yield return new WaitForSeconds(.2f);
-
             // Assert
-            Assert.Fail("Use TrackEnd event to test finite plays.");
-        }
+            Assert.IsFalse(module.IsPlaying);
+            Assert.IsFalse(module2.IsPlaying);
+        } 
 
         #region Setup
 

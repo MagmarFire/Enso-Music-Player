@@ -166,20 +166,22 @@ namespace EnsoMusicPlayer
 
         private void OnTrackEndOrLoop()
         {
+            bool trackEnded = numberOfLoopsLeft == 1;
             if (numberOfLoopsLeft > 0)
             {
                 numberOfLoopsLeft--;
-
-                if (numberOfLoopsLeft > 0)
-                {
-                    // OnTrackLoop
-                }
-                else
-                {
-                    Stop();
-                    // OnTrackEnd
-                }
             }
+
+            if (trackEnded)
+            {
+                Stop();
+                Player.OnTrackEnd();
+            }
+            else
+            {
+                Player.OnTrackLoop();
+            }
+
             Player.OnTrackEndOrLoop();
         }
         #endregion
