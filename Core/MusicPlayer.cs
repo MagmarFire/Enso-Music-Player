@@ -171,9 +171,10 @@ namespace EnsoMusicPlayer
         /// </summary>
         /// <param name="name">The name of the track</param>
         /// <param name="time">The time to fade the track in at, in seconds</param>
-        public void FadeInAtPoint(string name, float time)
+        /// <param name="timesToLoop">The number of times to loop the track. Set to 0 for endless play.</param>
+        public void FadeInAtPoint(string name, float time, int timesToLoop = 0)
         {
-            FadeInAtPoint(GetTrackByName(name), time);
+            FadeInAtPoint(GetTrackByName(name), time, timesToLoop);
         }
 
         /// <summary>
@@ -181,10 +182,11 @@ namespace EnsoMusicPlayer
         /// </summary>
         /// <param name="track">The track to play</param>
         /// <param name="time">The playback time for the next track, in seconds</param>
-        public void FadeInAtPoint(MusicTrack track, float time)
+        /// <param name="timesToLoop">The number of times to loop the track. Set to 0 for endless play.</param>
+        public void FadeInAtPoint(MusicTrack track, float time, int timesToLoop = 0)
         {
             PlayingTrack = track;
-            Scrub(time);
+            CurrentSpeaker.PlayAtPoint(track, time, timesToLoop);
             CurrentSpeaker.FadeIn(CrossFadeTime);
         }
 

@@ -310,7 +310,7 @@ namespace EnsoMusicPlayer
             {
                 pausePosition = Math.Min(position, CurrentLengthInSamples);
             }
-            else
+            else if (IsPlaying)
             {
                 PlayAtPoint(PlayingTrack.SamplesToSeconds(position), numberOfLoopsLeft);
             }
