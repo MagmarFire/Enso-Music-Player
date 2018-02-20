@@ -122,8 +122,64 @@ public class Enso_MusicPlayerEventTests {
         watch.Start();
     }
 
+    [UnityTest]
+    public IEnumerator Enso_TrackEnd()
+    {
+        SetUpMusicPlayer();
+
+        yield return null;
+
+        musicPlayer.TrackEnd += new MusicPlayerEventHandler(TestHandler);
+
+        musicPlayer.Play("QuickTest", 1);
+
+        yield return new WaitForSeconds(.2f);
+
+        Assert.AreEqual(1, timesHandlerCalled);
+
+        musicPlayer.Play("QuickTest", 3);
+
+        yield return new WaitForSeconds(.6f);
+
+        Assert.AreEqual(2, timesHandlerCalled);
+    }
+
+    [UnityTest]
+    public IEnumerator Enso_TrackLoop()
+    {
+        SetUpMusicPlayer();
+
+        yield return null;
+
+        musicPlayer.TrackLoop += new MusicPlayerEventHandler(TestHandler);
+
+        musicPlayer.Play("QuickTest", 3);
+
+        yield return new WaitForSeconds(.6f);
+
+        Assert.AreEqual(2, timesHandlerCalled);
+    }
+
+    [UnityTest]
+    public IEnumerator Enso_TrackLoopAndTrackEndOrLoopMustMatchInInfinitePlay()
+    {
+        SetUpMusicPlayer();
+
+        yield return null;
+
+        musicPlayer.TrackLoop += new MusicPlayerEventHandler(TestHandler);
+        musicPlayer.TrackEndOrLoop += new MusicPlayerEventHandler(TestHandler2);
+
+        musicPlayer.Play("QuickTest");
+
+        yield return new WaitForSeconds(.6f);
+
+        Assert.AreEqual(timesHandler2Called, timesHandlerCalled);
+    }
+
     private bool testHandlerCalled = false;
     private int timesHandlerCalled = 0;
+    private int timesHandler2Called = 0;
     private float lastWatchElapsedTime = 0f;
     private void TestHandler(MusicPlayerEventArgs e)
     {
@@ -132,6 +188,11 @@ public class Enso_MusicPlayerEventTests {
         timesHandlerCalled++;
         lastWatchElapsedTime = watch.ElapsedMilliseconds / 1000f;
         watch.Reset();
+    }
+
+    private void TestHandler2(MusicPlayerEventArgs e)
+    {
+        timesHandler2Called++;
     }
 
     private bool IsWithinMargin(float input, float goal, float margin)
@@ -195,6 +256,7 @@ public class Enso_MusicPlayerEventTests {
         DestroyIfItExists(musicPlayer);
         testHandlerCalled = false;
         timesHandlerCalled = 0;
+        timesHandler2Called = 0;
     }
 
     private MusicTrack CreateMockMusicTrack()

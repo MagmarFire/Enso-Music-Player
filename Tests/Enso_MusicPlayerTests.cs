@@ -44,7 +44,7 @@ namespace EnsoMusicPlayer
                 Track = AudioClip.Create("test", 2, 1, 1, false)
             };
             track.CreateAndCacheClips();
-            module.Play(track);
+            module.Play(track, EnsoConstants.PlayEndlessly);
 
             float originalVolume = speaker1.volume;
 
@@ -138,7 +138,7 @@ namespace EnsoMusicPlayer
                 Track = AudioClip.Create("test", 2, 1, 1, false)
             };
             track.CreateAndCacheClips();
-            module.Play(track);
+            module.Play(track, EnsoConstants.PlayEndlessly);
 
             yield return null;
 
@@ -345,16 +345,17 @@ namespace EnsoMusicPlayer
 
             musicPlayer.Pause();
 
-            yield return null;
-
             musicPlayer.Scrub(scrubPoint);
-
-            yield return null;
 
             musicPlayer.Unpause();
 
+            yield return null;
+
             // Assert
-            Assert.IsTrue(musicPlayer.CurrentTime >= scrubPoint);
+            Assert.IsTrue(musicPlayer.CurrentTime >= scrubPoint,
+                string.Format("Current time is less than scrub point: {0} < {1}",
+                    musicPlayer.CurrentTime,
+                    scrubPoint));
         }
 
         [UnityTest]
@@ -407,6 +408,115 @@ namespace EnsoMusicPlayer
             Assert.IsFalse(module2.IsPlaying);
         }
 
+        [UnityTest]
+        public IEnumerator Enso_PlayFinitely()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+            musicPlayer.TrackEndOrLoop += PlayFinitely_TrackEndOrLoop;
+
+            // Act
+            musicPlayer.Play("QuickTest", 3);
+
+            yield return new WaitForSeconds(.1f);
+
+            // Assert
+            Assert.AreEqual(3, timesPlayed);
+            Assert.IsFalse(module.IsPlaying);
+            Assert.IsFalse(module2.IsPlaying);
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_ScrubShouldNotAffectFinitePlays()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+            musicPlayer.TrackLoop += PlayFinitely_TrackEndOrLoop;
+
+            // Act
+            musicPlayer.Play("QuickTest", 3);
+
+            yield return new WaitForSeconds(.051f);
+
+            musicPlayer.ScrubAsPercentage(.5f);
+
+            yield return new WaitForSeconds(.2f);
+
+            // Assert
+            Assert.AreEqual(2, timesPlayed);
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_ScrubAfterFinitePlayEndsShouldNotPlayAgain()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+            musicPlayer.TrackEnd += Enso_ScrubAfterFinitePlayEndsShouldNotPlayAgainCallback;
+
+            // Act
+            musicPlayer.Play("QuickTest", 3);
+
+            // Assert is in callback
+            yield return new WaitForSeconds(.7f);
+        }
+
+        private void Enso_ScrubAfterFinitePlayEndsShouldNotPlayAgainCallback(MusicPlayerEventArgs e)
+        {
+            // Act
+            musicPlayer.ScrubAsPercentage(.5f);
+
+            // Assert
+            Assert.IsFalse(module.IsPlaying);
+            Assert.IsFalse(module2.IsPlaying);
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_PauseAndUnpauseWithTrackNotSetShouldNotThrowError()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+
+            // Act
+            musicPlayer.Pause();
+            musicPlayer.Unpause();
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_PauseAndUnpauseWithTrackSetShouldNotThrowError()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+
+            // Act
+            musicPlayer.Play("MusicTest");
+            musicPlayer.Stop();
+            musicPlayer.Pause();
+            musicPlayer.Unpause();
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_PauseUnpauseThenScrubShouldPlayAtPoint()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+
+            // Act
+            musicPlayer.Play("MusicTest");
+            musicPlayer.Stop();
+            musicPlayer.Pause();
+            musicPlayer.Unpause();
+
+            musicPlayer.Scrub(3f);
+
+            yield return null;
+
+            Assert.IsTrue(musicPlayer.CurrentTime >= 3f, "Current time is actually " + musicPlayer.CurrentTime);
+        }
+
         #region Setup
 
         private void SetUpMusicPlayer()
@@ -425,6 +535,16 @@ namespace EnsoMusicPlayer
                     {
                         sampleLoopStart = 2,
                         sampleLoopLength = 3
+                    }
+                },
+                new MusicTrack
+                {
+                    Name = "QuickTest",
+                    Track = AudioClip.Create("QuickTest", 5000, 1, 100000, false), // .05 seconds long
+                    loopPoints = new MusicTrack.LoopPoints
+                    {
+                        sampleLoopStart = 4000,
+                        sampleLoopLength = 1000 // Loops are .01 seconds long
                     }
                 }
             };
@@ -450,6 +570,7 @@ namespace EnsoMusicPlayer
         {
             DestroyIfItExists(module);
             DestroyIfItExists(musicPlayer);
+            timesPlayed = 0;
         }
 
         private MusicTrack CreateMockMusicTrack()
@@ -472,6 +593,12 @@ namespace EnsoMusicPlayer
             {
                 UnityEngine.Object.Destroy(obj.gameObject);
             }
+        }
+
+        int timesPlayed = 0;
+        private void PlayFinitely_TrackEndOrLoop(MusicPlayerEventArgs e)
+        {
+            timesPlayed++;
         }
 
         #endregion
