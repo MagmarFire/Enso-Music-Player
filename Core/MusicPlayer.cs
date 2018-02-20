@@ -290,7 +290,6 @@ namespace EnsoMusicPlayer
         {
             PrimarySpeaker.Stop();
             SecondarySpeaker.Stop();
-            PlayingTrack = null;
         }
 
         /// <summary>
