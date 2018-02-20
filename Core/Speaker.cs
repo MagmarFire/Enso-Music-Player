@@ -42,13 +42,7 @@ namespace EnsoMusicPlayer
 
         private int pausePosition;
         private int numberOfLoopsLeft;
-        public bool IsPaused
-        {
-            get
-            {
-                return pausePosition > 0;
-            }
-        }
+        public bool IsPaused { get; private set; }
 
         public float CurrentTime
         {
@@ -200,7 +194,7 @@ namespace EnsoMusicPlayer
         {
             SetTrack(track);
             PlayAtPoint(track, track.SamplesToSeconds(pausePosition), numberOfLoops);
-            pausePosition = 0;
+            RemovePauseState();
         }
 
         /// <summary>
@@ -224,7 +218,7 @@ namespace EnsoMusicPlayer
         /// <param name="numberOfLoops">The number of times to loop the track. Set to 0 for endless play.</param>
         public void PlayAtPoint(MusicTrack track, float time, int numberOfLoops)
         {
-            pausePosition = 0;
+            RemovePauseState();
             Stop();
             SetTrack(track);
 
@@ -243,30 +237,33 @@ namespace EnsoMusicPlayer
         /// <param name="numberOfLoops">The number of times to loop the track. Set to 0 for endless play.</param>
         private void PlayAtPosition(int samplePosition, int numberOfLoops)
         {
-            if (samplePosition <= IntroSource.clip.samples)
+            if (PlayingTrack != null)
             {
-                IntroSource.timeSamples = samplePosition;
-                LoopSource.timeSamples = 0;
-                IntroSource.Play();
-                LoopSource.PlayDelayed(PlayingTrack.SamplesToSeconds(IntroSource.clip.samples - samplePosition));
-            }
-            else
-            {
-                LoopSource.timeSamples = samplePosition - IntroSource.clip.samples;
-                LoopSource.Play();
-            }
+                if (samplePosition <= IntroSource.clip.samples)
+                {
+                    IntroSource.timeSamples = samplePosition;
+                    LoopSource.timeSamples = 0;
+                    IntroSource.Play();
+                    LoopSource.PlayDelayed(PlayingTrack.SamplesToSeconds(IntroSource.clip.samples - samplePosition));
+                }
+                else
+                {
+                    LoopSource.timeSamples = samplePosition - IntroSource.clip.samples;
+                    LoopSource.Play();
+                }
 
-            numberOfLoopsLeft = numberOfLoops;
-            InvokeRepeating("OnTrackEndOrLoop",
-                PlayingTrack.SamplesToSeconds(PlayingTrack.LengthInSamples - samplePosition),
-                PlayingTrack.SamplesToSeconds(PlayingTrack.LoopLength));
+                numberOfLoopsLeft = numberOfLoops;
+                InvokeRepeating("OnTrackEndOrLoop",
+                    PlayingTrack.SamplesToSeconds(PlayingTrack.LengthInSamples - samplePosition),
+                    PlayingTrack.SamplesToSeconds(PlayingTrack.LoopLength));
+            }
         }
 
         internal void Stop()
         {
             if (!IsPaused)
             {
-                pausePosition = 0;
+                RemovePauseState();
             }
             
             IntroSource.Stop();
@@ -277,7 +274,7 @@ namespace EnsoMusicPlayer
 
         private int GetPositionInSamples()
         {
-            if (PlayingTrack != null)
+            if (PlayingTrack != null && IsPlaying)
             {
                 if (IntroSource.isPlaying)
                 {
@@ -299,6 +296,7 @@ namespace EnsoMusicPlayer
             if (!IsPaused)
             {
                 pausePosition = GetPositionInSamples();
+                IsPaused = true;
                 Stop();
             }
         }
@@ -321,7 +319,7 @@ namespace EnsoMusicPlayer
             if (IsPaused)
             {
                 PlayAtPosition(pausePosition, numberOfLoopsLeft);
-                pausePosition = 0;
+                RemovePauseState();
             }
         }
 
@@ -340,6 +338,12 @@ namespace EnsoMusicPlayer
         {
             VolumeStatus = VolumeStatuses.Static;
             SetVolume(PlayerVolume);
+        }
+
+        private void RemovePauseState()
+        {
+            pausePosition = 0;
+            IsPaused = false;
         }
 
         internal void FadeOut(float fadeTime, bool stopAfterFade = false)

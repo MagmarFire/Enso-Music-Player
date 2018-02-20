@@ -345,16 +345,17 @@ namespace EnsoMusicPlayer
 
             musicPlayer.Pause();
 
-            yield return null;
-
             musicPlayer.Scrub(scrubPoint);
-
-            yield return null;
 
             musicPlayer.Unpause();
 
+            yield return null;
+
             // Assert
-            Assert.IsTrue(musicPlayer.CurrentTime >= scrubPoint);
+            Assert.IsTrue(musicPlayer.CurrentTime >= scrubPoint,
+                string.Format("Current time is less than scrub point: {0} < {1}",
+                    musicPlayer.CurrentTime,
+                    scrubPoint));
         }
 
         [UnityTest]
@@ -467,7 +468,54 @@ namespace EnsoMusicPlayer
             // Assert
             Assert.IsFalse(module.IsPlaying);
             Assert.IsFalse(module2.IsPlaying);
-        } 
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_PauseAndUnpauseWithTrackNotSetShouldNotThrowError()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+
+            // Act
+            musicPlayer.Pause();
+            musicPlayer.Unpause();
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_PauseAndUnpauseWithTrackSetShouldNotThrowError()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+
+            // Act
+            musicPlayer.Play("MusicTest");
+            musicPlayer.Stop();
+            musicPlayer.Pause();
+            musicPlayer.Unpause();
+
+            yield return null;
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_PauseUnpauseThenScrubShouldPlayAtPoint()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+
+            // Act
+            musicPlayer.Play("MusicTest");
+            musicPlayer.Stop();
+            musicPlayer.Pause();
+            musicPlayer.Unpause();
+
+            musicPlayer.Scrub(3f);
+
+            yield return null;
+
+            Assert.IsTrue(musicPlayer.CurrentTime >= 3f, "Current time is actually " + musicPlayer.CurrentTime);
+        }
 
         #region Setup
 
