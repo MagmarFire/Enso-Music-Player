@@ -41,7 +41,7 @@ namespace EnsoMusicPlayer
 
             MusicTrack track = new MusicTrack
             {
-                Track = AudioClip.Create("test", 2, 1, 1, false)
+                Track = AudioClip.Create("test", 2000, 1, 1000, false)
             };
             track.CreateAndCacheClips();
             module.Play(track, EnsoConstants.PlayEndlessly);
@@ -73,7 +73,7 @@ namespace EnsoMusicPlayer
 
             MusicTrack track = new MusicTrack
             {
-                Track = AudioClip.Create("test", 2, 1, 1, false)
+                Track = AudioClip.Create("test", 2000, 1, 1000, false)
             };
             track.CreateAndCacheClips();
 
@@ -106,7 +106,7 @@ namespace EnsoMusicPlayer
 
             MusicTrack track = new MusicTrack
             {
-                Track = AudioClip.Create("test", 2, 1, 1, false)
+                Track = AudioClip.Create("test", 2000, 1, 1000, false)
             };
             track.CreateAndCacheClips();
 
@@ -135,7 +135,7 @@ namespace EnsoMusicPlayer
 
             MusicTrack track = new MusicTrack
             {
-                Track = AudioClip.Create("test", 2, 1, 1, false)
+                Track = AudioClip.Create("test", 2000, 1, 1000, false)
             };
             track.CreateAndCacheClips();
             module.Play(track, EnsoConstants.PlayEndlessly);
@@ -166,9 +166,9 @@ namespace EnsoMusicPlayer
 
             MusicTrack track = new MusicTrack
             {
-                Track = AudioClip.Create("test", 4, 1, 1, false),
-                LoopStart = 1,
-                LoopLength = 1
+                Track = AudioClip.Create("test", 4000, 1, 1000, false),
+                LoopStart = 1000,
+                LoopLength = 1000
             };
             track.CreateAndCacheClips();
             musicPlayer.Play(track);
@@ -199,7 +199,7 @@ namespace EnsoMusicPlayer
 
             MusicTrack track = new MusicTrack
             {
-                Track = AudioClip.Create("test", 10, 1, 1, false),
+                Track = AudioClip.Create("test", 10000, 1, 1000, false),
             };
             track.CreateAndCacheClips();
         }
@@ -251,7 +251,7 @@ namespace EnsoMusicPlayer
             // Arrange
             MusicTrack track = new MusicTrack
             {
-                Track = AudioClip.Create("test", 1000, 1, 1, false)
+                Track = AudioClip.Create("test", 1000000, 1, 1000, false)
             };
             track.CreateAndCacheClips();
 
@@ -273,7 +273,7 @@ namespace EnsoMusicPlayer
             MusicTrack track = new MusicTrack
             {
                 Name = "test",
-                Track = AudioClip.Create("test", 1000, 1, 1, false)
+                Track = AudioClip.Create("test", 1000000, 1, 1000, false)
             };
             track.CreateAndCacheClips();
 
@@ -514,7 +514,28 @@ namespace EnsoMusicPlayer
 
             yield return null;
 
+            // Assert
             Assert.IsTrue(musicPlayer.CurrentTime >= 3f, "Current time is actually " + musicPlayer.CurrentTime);
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_FadeOutThenCrossfadeShouldNotChangeVolumeOfSpeaker()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+
+            // Act
+            musicPlayer.Play("MusicTest");
+            musicPlayer.FadeOut();
+
+            yield return new WaitForSeconds(2);
+
+            musicPlayer.CrossFadeAtPoint("MusicTest", 0f);
+
+            yield return null;
+
+            // Assert
+            Assert.IsTrue(speaker1.volume <= 0f, "Speaker volume is at " + speaker1.volume);
         }
 
         #region Setup
@@ -530,11 +551,11 @@ namespace EnsoMusicPlayer
                 new MusicTrack
                 {
                     Name = "MusicTest",
-                    Track = AudioClip.Create("MusicTest", 10, 1, 1, false),
+                    Track = AudioClip.Create("MusicTest", 10000, 1, 1000, false),
                     loopPoints = new MusicTrack.LoopPoints
                     {
-                        sampleLoopStart = 2,
-                        sampleLoopLength = 3
+                        sampleLoopStart = 2000,
+                        sampleLoopLength = 3000
                     }
                 },
                 new MusicTrack

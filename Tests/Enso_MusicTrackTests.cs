@@ -14,7 +14,7 @@ namespace EnsoMusicPlayer
         {
             MusicTrack track = new MusicTrack
             {
-                Track = AudioClip.Create("test", 2, 1, 1, false),
+                Track = AudioClip.Create("test", 2000, 1, 1000, false),
                 LoopStart = 42,
                 LoopLength = 79
             };
@@ -67,7 +67,7 @@ namespace EnsoMusicPlayer
         public void Enso_LengthInSamples()
         {
             // Arrange
-            var clip = AudioClip.Create("test", 20, 2, 1, false);
+            var clip = AudioClip.Create("test", 20000, 2, 1000, false);
 
             MusicTrack track = new MusicTrack
             {
@@ -88,7 +88,7 @@ namespace EnsoMusicPlayer
         public void Enso_NoLoopSettings()
         {
             // Arrange
-            var clip = AudioClip.Create("test", 20, 2, 1, false);
+            var clip = AudioClip.Create("test", 20000, 2, 1000, false);
 
             MusicTrack track = new MusicTrack
             {
@@ -123,7 +123,7 @@ namespace EnsoMusicPlayer
         public void Enso_OutOfBoundsFailsafe()
         {
             // Arrange
-            var clip = AudioClip.Create("test", 20, 2, 1, false);
+            var clip = AudioClip.Create("test", 20000, 2, 1000, false);
 
             MusicTrack track = new MusicTrack
             {

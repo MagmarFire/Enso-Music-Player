@@ -221,11 +221,11 @@ public class Enso_MusicPlayerEventTests {
                 new MusicTrack
                 {
                     Name = "MusicTest",
-                    Track = AudioClip.Create("MusicTest", 10, 1, 1, false),
+                    Track = AudioClip.Create("MusicTest", 10000, 1, 1000, false),
                     loopPoints = new MusicTrack.LoopPoints
                     {
-                        sampleLoopStart = 2,
-                        sampleLoopLength = 3
+                        sampleLoopStart = 2000,
+                        sampleLoopLength = 3000
                     }
                 },
                 new MusicTrack
