@@ -28,9 +28,6 @@ namespace EnsoMusicPlayer
         }
 
         public MusicPlayer Player;
-        // Holds the volume of the music player. This is held separately instead of referenced directly
-        // in order to decouple the module from the player.
-        public float PlayerVolume { get; private set; }
 
         public enum VolumeStatuses { FadingIn, FadingOut, Static }
         public VolumeStatuses VolumeStatus { get; private set; }
@@ -94,7 +91,11 @@ namespace EnsoMusicPlayer
             LoopSource = gameObject.AddComponent<AudioSource>();
 
             LoopSource.loop = true;
+        }
 
+        public void SetPlayerAndInitializeVolume(MusicPlayer player)
+        {
+            Player = player;
             InitializeVolume();
         }
 
@@ -119,7 +120,7 @@ namespace EnsoMusicPlayer
                     else
                     {
                         float t = FadeTimeLeft / MaxFadeTime;
-                        SetVolume(PlayerVolume * EnsoHelpers.CalculateEqualPowerCrossfade(t, true));
+                        SetVolume(Player.Volume + (1 - Player.Volume) * EnsoHelpers.CalculateEqualPowerCrossfade(t, true));
                     }
                     break;
 
@@ -131,7 +132,7 @@ namespace EnsoMusicPlayer
                     else
                     {
                         float t = FadeTimeLeft / MaxFadeTime;
-                        SetVolume(PlayerVolume * EnsoHelpers.CalculateEqualPowerCrossfade(t, false));
+                        SetVolume(Player.Volume * EnsoHelpers.CalculateEqualPowerCrossfade(t, false));
                     }
                     break;
             }
@@ -140,15 +141,15 @@ namespace EnsoMusicPlayer
         #region Event Callback
         private void OnFadeInComplete()
         {
-            SetVolume(PlayerVolume);
             VolumeStatus = VolumeStatuses.Static;
+            Player.SetVolume(1);
             Player.OnFadeInComplete();
         }
 
         private void OnFadeOutComplete()
         {
-            SetVolume(0);
             VolumeStatus = VolumeStatuses.Static;
+            Player.SetVolume(0);
 
             if (StopAfterFade)
             {
@@ -329,15 +330,10 @@ namespace EnsoMusicPlayer
             LoopSource.volume = volume;
         }
 
-        internal void SetPlayerVolume(float playerVolume)
-        {
-            PlayerVolume = playerVolume;
-        }
-
         private void InitializeVolume()
         {
             VolumeStatus = VolumeStatuses.Static;
-            SetVolume(PlayerVolume);
+            SetVolume(Player.Volume);
         }
 
         private void RemovePauseState()

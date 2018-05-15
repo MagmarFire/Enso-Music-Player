@@ -206,8 +206,6 @@ public class Enso_MusicPlayerEventTests {
         GameObject player = new GameObject();
         player.AddComponent<AudioListener>();
         module = player.AddComponent<Speaker>();
-
-        module.SetPlayerVolume(1f);
     }
 
     private void SetUpMusicPlayer()

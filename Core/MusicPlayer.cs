@@ -11,8 +11,6 @@ namespace EnsoMusicPlayer
         [Header("Volume Settings")]
         [Range(0f, 1f)]
         public float Volume = 1f; // Should be considered readonly outside the player's scope.
-        // Remove this as soon as Unity supports C# 6; then we can simply use an auto-field initializer.
-        private float PreviousVolume;
         public float CrossFadeTime = 2f;
 
         [Header("TrackSettings")]
@@ -29,12 +27,9 @@ namespace EnsoMusicPlayer
         {
             PrimarySpeaker = gameObject.AddComponent<Speaker>();
             SecondarySpeaker = gameObject.AddComponent<Speaker>();
-            PrimarySpeaker.Player = this;
-            SecondarySpeaker.Player = this;
+            PrimarySpeaker.SetPlayerAndInitializeVolume(this);
+            SecondarySpeaker.SetPlayerAndInitializeVolume(this);
             CurrentSpeaker = PrimarySpeaker;
-
-            PrimarySpeaker.SetPlayerVolume(Volume);
-            SecondarySpeaker.SetPlayerVolume(Volume);
 
             // Cache all the clips before we play them for maximum performance when starting playback.
             if (Tracks != null)
@@ -44,19 +39,11 @@ namespace EnsoMusicPlayer
                     track.CreateAndCacheClips();
                 }
             }
-
-            RefreshSpeakerVolume(); // Initialize both modules' volume.
         }
 
         // Update is called once per frame
         void Update()
         {
-            // We need this because this is C# 4, not 6...
-            if (Volume != PreviousVolume)
-            {
-                RefreshSpeakerVolume();
-                PreviousVolume = Volume;
-            }
         }
 
         #region PublicAPI
@@ -278,8 +265,7 @@ namespace EnsoMusicPlayer
             if (!PrimarySpeaker.IsFading && !SecondarySpeaker.IsFading)
             {
                 Volume = volume;
-                PrimarySpeaker.SetPlayerVolume(volume);
-                SecondarySpeaker.SetPlayerVolume(volume);
+                RefreshSpeakerVolume();
             }
         }
 
