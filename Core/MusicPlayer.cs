@@ -149,7 +149,8 @@ namespace EnsoMusicPlayer
         /// <param name="timesToLoop">The number of times to loop the track. Set to 0 for endless play.</param>
         public void PlayAtPoint(MusicTrack track, float time, int timesToLoop = 0)
         {
-            CurrentSpeaker.SetVolume(Volume);
+            ResetSpeakerVolumeStatuses();
+            RefreshSpeakerVolume();
             CurrentSpeaker.PlayAtPoint(track, time, timesToLoop);
         }
 
@@ -178,6 +179,15 @@ namespace EnsoMusicPlayer
         }
 
         /// <summary>
+        /// Fades a track gradually toward the given volume level.
+        /// </summary>
+        /// <param name="volume">The level to fade the track to (from 0 to 1)</param>
+        public void FadeTo(float volume)
+        {
+            CurrentSpeaker.FadeTo(volume, CrossFadeTime);
+        }
+
+        /// <summary>
         /// Crossfades to the track with the given name at the given point on its timeline.
         /// </summary>
         /// <param name="name">The name of the track</param>
@@ -198,7 +208,7 @@ namespace EnsoMusicPlayer
         {
             CrossFadeTo(track, timesToLoop);
             Scrub(time);
-            CurrentSpeaker.FadeIn(CrossFadeTime);
+            CurrentSpeaker.FadeInTo(Volume, CrossFadeTime);
         }
 
         /// <summary>
@@ -220,8 +230,9 @@ namespace EnsoMusicPlayer
             CurrentSpeaker.FadeOut(CrossFadeTime, true);
             SwitchSpeakers();
             PlayingTrack = track;
+            CurrentSpeaker.SetSpeakerVolume(0f);
             CurrentSpeaker.Play(PlayingTrack, timesToLoop);
-            CurrentSpeaker.FadeIn(CrossFadeTime);
+            CurrentSpeaker.FadeInTo(Volume, CrossFadeTime);
         }
 
         /// <summary>
@@ -420,8 +431,17 @@ namespace EnsoMusicPlayer
         /// </summary>
         private void RefreshSpeakerVolume()
         {
-            PrimarySpeaker.SetVolume(Volume);
-            SecondarySpeaker.SetVolume(Volume);
+            PrimarySpeaker.SetSpeakerVolume(Volume);
+            SecondarySpeaker.SetSpeakerVolume(Volume);
+        }
+
+        /// <summary>
+        /// Tells the speakers to stop fading if they currently are.
+        /// </summary>
+        private void ResetSpeakerVolumeStatuses()
+        {
+            PrimarySpeaker.StopFading();
+            SecondarySpeaker.StopFading();
         }
     }
 }

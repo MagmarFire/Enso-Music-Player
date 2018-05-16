@@ -27,6 +27,15 @@ namespace EnsoMusicPlayer
             }
         }
 
+        public float Volume
+        {
+            get
+            {
+                // This should be the same as LoopSource.volume, so it doesn't matter which one we use
+                return IntroSource.volume;
+            }
+        }
+
         public MusicPlayer Player;
 
         public enum VolumeStatuses { FadingIn, FadingOut, Static }
@@ -34,6 +43,8 @@ namespace EnsoMusicPlayer
 
         private float FadeTimeLeft;
         private float MaxFadeTime;
+        private float DestFadeVolume;
+        private float OrigFadeVolume;
 
         private bool StopAfterFade { get; set; }
 
@@ -120,7 +131,7 @@ namespace EnsoMusicPlayer
                     else
                     {
                         float t = FadeTimeLeft / MaxFadeTime;
-                        SetVolume(Player.Volume + (1 - Player.Volume) * EnsoHelpers.CalculateEqualPowerCrossfade(t, true));
+                        SetSpeakerVolume(OrigFadeVolume + (DestFadeVolume - OrigFadeVolume) * EnsoHelpers.CalculateEqualPowerCrossfade(t, true));
                     }
                     break;
 
@@ -132,7 +143,7 @@ namespace EnsoMusicPlayer
                     else
                     {
                         float t = FadeTimeLeft / MaxFadeTime;
-                        SetVolume(Player.Volume * EnsoHelpers.CalculateEqualPowerCrossfade(t, false));
+                        SetSpeakerVolume(OrigFadeVolume * EnsoHelpers.CalculateEqualPowerCrossfade(t, false));
                     }
                     break;
             }
@@ -142,14 +153,14 @@ namespace EnsoMusicPlayer
         private void OnFadeInComplete()
         {
             VolumeStatus = VolumeStatuses.Static;
-            Player.SetVolume(1);
+            SetSpeakerVolume(DestFadeVolume);
             Player.OnFadeInComplete();
         }
 
         private void OnFadeOutComplete()
         {
             VolumeStatus = VolumeStatuses.Static;
-            Player.SetVolume(0);
+            SetSpeakerVolume(DestFadeVolume);
 
             if (StopAfterFade)
             {
@@ -222,8 +233,6 @@ namespace EnsoMusicPlayer
             RemovePauseState();
             Stop();
             SetTrack(track);
-
-            InitializeVolume();
 
             IntroSource.clip = PlayingTrack.IntroClip;
             LoopSource.clip = PlayingTrack.LoopClip;
@@ -324,7 +333,7 @@ namespace EnsoMusicPlayer
             }
         }
 
-        internal void SetVolume(float volume)
+        internal void SetSpeakerVolume(float volume)
         {
             IntroSource.volume = volume;
             LoopSource.volume = volume;
@@ -333,7 +342,7 @@ namespace EnsoMusicPlayer
         private void InitializeVolume()
         {
             VolumeStatus = VolumeStatuses.Static;
-            SetVolume(Player.Volume);
+            SetSpeakerVolume(Player.Volume);
         }
 
         private void RemovePauseState()
@@ -342,19 +351,51 @@ namespace EnsoMusicPlayer
             IsPaused = false;
         }
 
-        internal void FadeOut(float fadeTime, bool stopAfterFade = false)
+        public void FadeTo(float volume, float fadeTime)
         {
+            if (volume > Player.Volume)
+            {
+                FadeInTo(volume, fadeTime);
+            }
+            else if (volume < Player.Volume)
+            {
+                FadeOutTo(volume, fadeTime);
+            }
+        }
+
+        public void FadeInTo(float destVolume, float fadeTime)
+        {
+            DestFadeVolume = destVolume;
+            OrigFadeVolume = Volume;
+            MaxFadeTime = fadeTime;
+            FadeTimeLeft = fadeTime;
+            VolumeStatus = VolumeStatuses.FadingIn;
+        }
+
+        public void FadeOutTo(float destVolume, float fadeTime)
+        {
+            DestFadeVolume = destVolume;
+            OrigFadeVolume = Volume;
             MaxFadeTime = fadeTime;
             FadeTimeLeft = fadeTime;
             VolumeStatus = VolumeStatuses.FadingOut;
+        }
+
+        internal void FadeOut(float fadeTime, bool stopAfterFade = false)
+        {
+            FadeOutTo(0f, fadeTime);
             StopAfterFade = stopAfterFade;
         }
 
         internal void FadeIn(float fadeTime)
         {
-            MaxFadeTime = fadeTime;
-            FadeTimeLeft = fadeTime;
-            VolumeStatus = VolumeStatuses.FadingIn;
+            FadeInTo(Player.Volume, fadeTime);
+        }
+
+        internal void StopFading()
+        {
+            VolumeStatus = VolumeStatuses.Static;
+            SetSpeakerVolume(Player.Volume);
         }
     }
 }
