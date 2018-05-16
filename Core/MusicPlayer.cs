@@ -10,13 +10,14 @@ namespace EnsoMusicPlayer
     {
         [Header("Volume Settings")]
         [Range(0f, 1f)]
-        public float Volume = 1f; // Should be considered readonly outside the player's scope.
+        public float StartVolume = 1f; // Should be considered readonly outside the player's scope.
         public float CrossFadeTime = 2f;
 
         [Header("TrackSettings")]
         public List<MusicTrack> Tracks;
 
         public MusicTrack PlayingTrack { get; private set; }
+        public float Volume { get; private set; }
 
         private Speaker PrimarySpeaker;
         private Speaker SecondarySpeaker;
@@ -30,6 +31,8 @@ namespace EnsoMusicPlayer
             PrimarySpeaker.SetPlayerAndInitializeVolume(this);
             SecondarySpeaker.SetPlayerAndInitializeVolume(this);
             CurrentSpeaker = PrimarySpeaker;
+
+            Volume = StartVolume;
 
             // Cache all the clips before we play them for maximum performance when starting playback.
             if (Tracks != null)

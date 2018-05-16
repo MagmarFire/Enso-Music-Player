@@ -711,6 +711,7 @@ namespace EnsoMusicPlayer
             GameObject player = new GameObject();
             player.AddComponent<AudioListener>();
             musicPlayer = player.AddComponent<MusicPlayer>();
+            musicPlayer.SetVolume(1f);
 
             musicPlayer.Tracks = new List<MusicTrack>
             {
