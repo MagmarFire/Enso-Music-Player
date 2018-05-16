@@ -127,22 +127,61 @@ namespace EnsoMusicPlayer
         }
 
         [UnityTest]
+        public IEnumerator Enso_SetVolume()
+        {
+            SetUpMusicPlayer();
+
+            yield return null;
+
+            musicPlayer.SetVolume(.5f);
+
+            yield return null;
+
+            Assert.AreEqual(speaker1.volume, musicPlayer.Volume);
+            Assert.AreEqual(speaker2.volume, musicPlayer.Volume);
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_FadeTo()
+        {
+            SetUpMusicPlayer();
+            musicPlayer.CrossFadeTime = .5f;
+
+            yield return null;
+
+            musicPlayer.FadeTo(.5f);
+
+            yield return new WaitForSeconds(musicPlayer.CrossFadeTime);
+
+            Assert.AreEqual(.5f, module.Volume);
+
+            musicPlayer.FadeTo(.75f);
+
+            yield return new WaitForSeconds(musicPlayer.CrossFadeTime);
+
+            Assert.AreEqual(.75f, module.Volume);
+        }
+
+        [UnityTest]
         public IEnumerator Enso_FadeInTrack()
         {
             SetUpMusicPlayer();
 
             yield return null;
 
+            musicPlayer.CrossFadeTime = 1f;
+            musicPlayer.SetVolume(.75f);
             MusicTrack track = new MusicTrack
             {
                 Track = AudioClip.Create("test", 2000, 1, 1000, false)
             };
             track.CreateAndCacheClips();
             module.Play(track, EnsoConstants.PlayEndlessly);
+            module.SetSpeakerVolume(0f);
 
             yield return null;
 
-            module.FadeIn(2);
+            module.FadeIn(musicPlayer.CrossFadeTime);
             float originalVolume = speaker1.volume;
 
             Assert.AreEqual(Speaker.VolumeStatuses.FadingIn, module.VolumeStatus);
@@ -151,10 +190,10 @@ namespace EnsoMusicPlayer
 
             Assert.AreNotEqual(speaker1.volume, originalVolume, "The volume isn't changing when fading in.");
 
-            yield return new WaitForSecondsRealtime(2);
+            yield return new WaitForSeconds(2);
 
             Assert.AreEqual(Speaker.VolumeStatuses.Static, module.VolumeStatus);
-            Assert.AreEqual(speaker1.volume, originalVolume, "Speaker volume doesn't equal PlayerVolume when fading in is complete.");
+            Assert.AreEqual(musicPlayer.Volume, speaker1.volume, "Speaker volume doesn't equal 1 when fading in is complete.");
         }
 
         [UnityTest]
@@ -307,6 +346,86 @@ namespace EnsoMusicPlayer
             // Assert
             Assert.IsTrue(musicPlayer.CurrentTime >= fadeInPoint);
             Assert.AreEqual(Speaker.VolumeStatuses.FadingIn, module.VolumeStatus);
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_VolumeShouldBeSetProperlyBeforeDuringAndAfterCrossfade()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+            musicPlayer.CrossFadeTime = .5f;
+            musicPlayer.SetVolume(.25f);
+
+            // Act
+            musicPlayer.Play("MusicTest");
+
+            float originalVolume = module.LoopSource.volume;
+
+            yield return null;
+
+            musicPlayer.CrossFadeTo("MusicTest");
+
+            Assert.AreEqual(originalVolume, module.Volume, "Volume is not the same for speaker 1 before crossfade");
+            Assert.AreEqual(0f, module2.Volume, "Speaker 2 is not muted before crossfade");
+
+            yield return new WaitForSeconds(musicPlayer.CrossFadeTime / 2f);
+
+            Assert.AreNotEqual(0f, module2.Volume, "Speaker 2 isn't fading in during crossfade");
+
+            yield return new WaitForSeconds(musicPlayer.CrossFadeTime / 2f);
+
+            // Assert
+            Assert.AreEqual(originalVolume, module2.LoopSource.volume, "Speaker 2 is not at the original volume after crossfade");
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_VolumeShouldBeSetProperlyAfterDoubleCrossfade()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+            musicPlayer.CrossFadeTime = .5f;
+            musicPlayer.SetVolume(.25f);
+
+            // Act
+            musicPlayer.Play("MusicTest");
+
+            float originalVolume = module.LoopSource.volume;
+
+            yield return null;
+
+            musicPlayer.CrossFadeTo("MusicTest");
+
+            yield return new WaitForSeconds(musicPlayer.CrossFadeTime);
+
+            musicPlayer.CrossFadeTo("MusicTest");
+
+            yield return new WaitForSeconds(musicPlayer.CrossFadeTime);
+
+            // Assert
+            Assert.AreNotEqual(0f, module.Volume, "Speaker 1 is not at the original volume after a double crossfade");
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_VolumeShouldNotBeDifferentAfterCrossfadeAtPoint()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+            musicPlayer.CrossFadeTime = .5f;
+            musicPlayer.SetVolume(.25f);
+
+            // Act
+            musicPlayer.Play("MusicTest");
+
+            float originalVolume = module.LoopSource.volume;
+
+            yield return null;
+
+            musicPlayer.CrossFadeAtPoint("MusicTest", .1f);
+
+            yield return new WaitForSeconds(musicPlayer.CrossFadeTime);
+
+            // Assert
+            Assert.AreEqual(originalVolume, module2.LoopSource.volume);
         }
 
         [UnityTest]
@@ -531,6 +650,53 @@ namespace EnsoMusicPlayer
             yield return new WaitForSeconds(2);
 
             musicPlayer.CrossFadeAtPoint("MusicTest", 0f);
+
+            yield return null;
+
+            // Assert
+            Assert.IsTrue(speaker1.volume <= 0f, "Speaker volume is at " + speaker1.volume);
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_FadeInAfterFadeInShouldDoNothing()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+
+            // Act
+            musicPlayer.Play("MusicTest");
+            musicPlayer.SetVolume(.75f);
+
+            yield return null;
+
+            musicPlayer.FadeIn();
+
+            yield return new WaitForSeconds(2);
+
+            musicPlayer.FadeIn();
+
+            yield return null;
+
+            // Assert
+            Assert.IsTrue(speaker1.volume >= .75f, "Speaker volume is at " + speaker1.volume);
+        }
+
+        [UnityTest]
+        public IEnumerator Enso_FadeOutAfterFadeOutShouldDoNothing()
+        {
+            // Arrange
+            SetUpMusicPlayer();
+
+            // Act
+            musicPlayer.Play("MusicTest");
+
+            yield return null;
+
+            musicPlayer.FadeOut();
+
+            yield return new WaitForSeconds(2);
+
+            musicPlayer.FadeOut();
 
             yield return null;
 
