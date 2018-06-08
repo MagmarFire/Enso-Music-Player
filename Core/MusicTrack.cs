@@ -1,7 +1,7 @@
 ﻿using System;
-using UnityEditor;
 using UnityEngine;
 using ATL;
+using System.IO;
 
 namespace EnsoMusicPlayer
 {
@@ -19,6 +19,9 @@ namespace EnsoMusicPlayer
 
             [Tooltip("How long a loop will last before going back to the start point, in samples. Set to 0 to use the track's defaults.")]
             public int sampleLoopLength;
+
+            [Tooltip("The path to the audio clip, relative to the Assets folder. This can be left blank if both Sample Loop Start and Length have values set, and if Compensate for Frequency is unchecked. Example: test.ogg located in the Music folder would have this value be \"Music/test.ogg\"")]
+            public string RelativeFilePath;
 
             [Tooltip("Leave this checked to permit Ensō to automatically adjust the set loop points for any change in frequency that may have happened when importing the audio clip. Uncheck it to use the values as written.")]
             public bool compensateForFrequency = true;
@@ -225,9 +228,17 @@ namespace EnsoMusicPlayer
             {
                 if (trackAsset == null)
                 {
-                    string trackPath = AssetDatabase.GetAssetPath(Track);
+                    if (string.IsNullOrEmpty(loopPoints.RelativeFilePath)
+                        &&
+                        (loopPoints.compensateForFrequency
+                        || loopPoints.sampleLoopLength == 0
+                        || loopPoints.sampleLoopStart == 0))
+                    {
+                        Debug.LogWarning(Name + " does not have a relative file path set but has Loop Points data set.");
+                        return null;
+                    }
 
-                    if (string.IsNullOrEmpty(trackPath)) return null;
+                    string trackPath = Path.GetFullPath("Assets/" + loopPoints.RelativeFilePath);
 
                     trackAsset = new Track(trackPath);
                 }
